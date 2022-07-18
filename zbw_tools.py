@@ -2,24 +2,22 @@
 # file: zbw_tools.py
 # Author: zeth willie
 # Contact: zethwillie@gmail.com, www.williework.blogspot.com
-# Date Modified: 4/20/20
+# Date Modified: 7/19/2022
 # To Use: type in python window  "import zbw_tools as tools; reload(tools); tools.tools()"
 # Notes/Descriptions: some rigging, anim, modeling and shading tools. *** requires zTools package in a python path.
 ########################
 
-# TODO convert to windows class
-
 from functools import partial
 import os
-from maya import cmds
+import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMaya as om
 import importlib
 
-from . import rig.zbw_rig as rig
-from . import resources.zbw_pipe as pipe
-from . import resources.zbw_removeNamespaces as rmns
-from . import resources.zbw_registeredTools as zReg
+import zTools3.rig.zbw_rig as rig
+import zTools3.resources.zbw_pipe as pipe
+import zTools3.resources.zbw_removeNamespaces as rmns
+import zTools3.resources.zbw_registeredTools as zReg
 
 widgets = {}
 # make sure maya can see and call mel scripts from zTools (where this is called from)
