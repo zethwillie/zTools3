@@ -26,7 +26,7 @@ revisions:
         - Added Help menu
         
 to-do:
-    
+converted to python 3 by zwillie July 17, 2022    
 """
 
 #-------------------------------------------------------------------------

@@ -781,8 +781,6 @@ def tools_UI(*args):
         l="MODELING", w=280, bv=True, bgc=(0, 0, 0)
     )
     widgets["mdlPropRCLO"] = cmds.rowColumnLayout(nc=2, bgc=(0.3, 0.3, 0.3))
-    # widgets["MaddToLat"] = cmds.button(l="add to deformer", w=140, bgc=(.5, .7, .5), c=add_to_deformer)
-    # widgets["extend"] = cmds.button(l="zbw_polyExtend", w=140, bgc=(.7, .5, .5),c=partial(zAction, zModelDict,"extend"))
     widgets["wrinkle"] = cmds.button(
         l="zbw_wrinklePoly",
         w=140,
@@ -825,7 +823,6 @@ def tools_UI(*args):
         c=partial(zAction, zRigDict, "snap"),
         ann=zAnn["zSnap"],
     )
-    # widgets["MabSym"] = cmds.button(l="abSymMesh", w=140, bgc=(.5, .5, .5), c=partial(zAction, zRigDict,"abSym"))
     widgets["McmtRename"] = cmds.button(
         l="cometRename",
         w=140,
