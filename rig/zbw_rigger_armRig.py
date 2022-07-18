@@ -1,0 +1,37 @@
+import zTools.rig.zbw_rigger_utils as zrt
+import importlib
+importlib.reload(zrt)
+import zTools.rig.zbw_rigger_baseLimb as BL
+importlib.reload(BL)
+import zTools.rig.zbw_rig as rig
+importlib.reload(rig)
+import zTools.rig.zbw_rigger_window as zrw
+importlib.reload(zrw)
+
+
+class ArmRigUI(zrw.RiggerWindow):
+    def __init__(self):
+        self.width = 300
+        self.height = 600
+
+        self.winInitName = "zbw_armRiggerUI"
+        self.winTitle="Arm Rigger UI"
+        # common
+        self.defaultLimbName = "arm"
+        self.defaultOrigPrefix = "L"
+        self.defaultMirPrefix = "R"
+        self.pts = [(5,20, 0),(15, 20, -1), (25, 20, 0), (27, 20, 0)]
+        self.baseNames = ["shoulder", "elbow", "wrist", "wristEnd"]
+        self.secRotOrderJnts = [2]
+        self.make_UI()
+
+    def create_rigger(self, *args):
+        self.rigger = ArmRig()
+        self.get_values_for_rigger()
+        self.set_values_for_rigger()
+
+
+class ArmRig(BL.BaseLimb):
+
+    def __init__(self):
+        BL.BaseLimb.__init__(self)
