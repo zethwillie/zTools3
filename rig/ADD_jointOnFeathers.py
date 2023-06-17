@@ -1,42 +1,44 @@
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
-importlib.reload(rig)
 
-#returns the closest vertex given a mesh and a position [x,y,z] in world space.
-#Uses om.MfnMesh.getClosestPoint() returned face ID and iterates through face's vertices.
-def getClosestVertex(mayaMesh,pos=[0,0,0]):
-    mVector = om.MVector(pos)#using MVector type to represent position
+# returns the closest vertex given a mesh and a position [x,y,z] in world space.
+# Uses om.MfnMesh.getClosestPoint() returned face ID and iterates through face's vertices.
+
+
+def getClosestVertex(mayaMesh, pos=[0, 0, 0]):
+    mVector = om.MVector(pos)  # using MVector type to represent position
     selectionList = om.MSelectionList()
     selectionList.add(mayaMesh)
-    dPath= selectionList.getDagPath(0)
-    mMesh=om.MFnMesh(dPath)
-    ID = mMesh.getClosestPoint(om.MPoint(mVector),space=om.MSpace.kWorld)[1] #getting closest face ID
-    list=cmds.ls( cmds.polyListComponentConversion (mayaMesh+'.f['+str(ID)+']',ff=True,tv=True),flatten=True)#face's vertices list
-    #setting vertex [0] as the closest one
-    d=mVector-om.MVector(cmds.xform(list[0],t=True,ws=True,q=True))
-    smallestDist2=d.x*d.x+d.y*d.y+d.z*d.z #using distance squared to compare distance
-    closest=list[0]
-    #iterating from vertex [1]
-    for i in range(1,len(list)) :
-        d=mVector-om.MVector(cmds.xform(list[i],t=True,ws=True,q=True))
-        d2=d.x*d.x+d.y*d.y+d.z*d.z
-        if d2<smallestDist2:
-            smallestDist2=d2
-            closest=list[i]      
+    dPath = selectionList.getDagPath(0)
+    mMesh = om.MFnMesh(dPath)
+    ID = mMesh.getClosestPoint(om.MPoint(mVector), space=om.MSpace.kWorld)[1]  # getting closest face ID
+    list = cmds.ls(cmds.polyListComponentConversion(mayaMesh + '.f[' + str(ID) + ']', ff=True, tv=True), flatten=True)  # face's vertices list
+    # setting vertex [0] as the closest one
+    d = mVector - om.MVector(cmds.xform(list[0], t=True, ws=True, q=True))
+    smallestDist2 = d.x * d.x + d.y * d.y + d.z * d.z  # using distance squared to compare distance
+    closest = list[0]
+    # iterating from vertex [1]
+    for i in range(1, len(list)):
+        d = mVector - om.MVector(cmds.xform(list[i], t=True, ws=True, q=True))
+        d2 = d.x * d.x + d.y * d.y + d.z * d.z
+        if d2 < smallestDist2:
+            smallestDist2 = d2
+            closest = list[i]
     return closest
+
 
 def create_joints(centerObj, startVtx, endVtx):
     posA = om.MVector(cmds.pointPosition(startVtx))
     posB = om.MVector(cmds.pointPosition(endVtx))
-    diff = (posB-posA)
+    diff = (posB - posA)
     length = diff.length()
     cmds.select(cl=True)
-    topJnt = cmds.joint(name = "{0}_top_JNT".format(startVtx.split(".")[0]))
-    endJnt = cmds.joint(name= "{0}_end_JNT".format(startVtx.split(".")[0]), a=True, position=(0, -length, 0))
+    topJnt = cmds.joint(name="{0}_top_JNT".format(startVtx.split(".")[0]))
+    endJnt = cmds.joint(name="{0}_end_JNT".format(startVtx.split(".")[0]), a=True, position=(0, -length, 0))
     #cmds.parent(endJnt, topJnt)
 
     return(topJnt, endJnt)
@@ -58,8 +60,8 @@ def create_feather_rig(startVtx=23, endVtx=0, centerObj="neck03_JNT", locVtx=7, 
         topJnt, endJnt = create_joints(centerObj, "{0}.vtx[{1}]".format(obj, startVtx), "{0}.vtx[{1}]".format(obj, endVtx))
 
         cmds.select(cl=True)
-        #for x in ["buffer", "auto", "orient", "attach"]:
-        attachGrp = cmds.group(name = "{0}_attach".format(obj), em=True)
+        # for x in ["buffer", "auto", "orient", "attach"]:
+        attachGrp = cmds.group(name="{0}_attach".format(obj), em=True)
         cmds.parent(topJnt, attachGrp)
 
         # move attach to foll location

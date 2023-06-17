@@ -8,11 +8,9 @@
 #call with: import zbw_ribbon; zbw_ribbon.zbw_ribbon()
 ########################
 
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
-importlib.reload(rig)
-import zTools.resources.zbw_window as win
-importlib.reload(win)
+import zTools3.resources.zbw_window as win
 import maya.OpenMaya as om
 import maya.cmds as cmds
 

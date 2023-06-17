@@ -9,7 +9,7 @@
 
 #create a follicle on the specified uv location
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import maya.mel as mel
 
 widgets = {}
@@ -58,8 +58,8 @@ def getUV(*args):
             #convert vertex to uvs
             thisUV = cmds.polyListComponentConversion(vert, fv=True, tuv=True)[0]
             uvs.append(thisUV)
-        else:
-            cmds.warning("You haven't selected any verts! Select one or two to place a follicle")
+    else:
+        cmds.warning("You haven't selected any verts! Select one or two to place a follicle")
 
         #convert vertices to uvs and get their value
         if uvs:

@@ -2,16 +2,14 @@ import maya.cmds as cmds
 import json
 import os
 from functools import partial
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
-importlib.reload(rig)
-import zTools.zbw_tools as tools
-importlib.reload(tools)
+import zTools3.zbw_tools as tools
 
 
 # clean this up to be more elegant
 
-# come up with a more elegant way to deal with joint/ctrl stuff. Maybe expand out to rig class stuff? Or bring that into here? 
+# come up with a more elegant way to deal with joint/ctrl stuff. Maybe expand out to rig class stuff? Or bring that into here?
 # add joint orient to window? for control creation
 # add ik to fingers?
 
@@ -41,6 +39,7 @@ with open(savePath, 'w') as outfile:
     json.dump(joint_dictionary, outfile)
 '''
 
+
 class HandRig(object):
     def __init__(self):
         self.joint_dictionary = {}
@@ -67,7 +66,7 @@ class HandRig(object):
 
         self.win = cmds.window("handWin", t="zbw_hand_rig", w=280, s=True)
         cmds.columnLayout()
-        self.mirror = cmds.checkBoxGrp(l="Mirror: ", ncb=1, v1=True, cal=[(1,"left"),(2,"left")], cw=[(1, 50), (2,20)])
+        self.mirror = cmds.checkBoxGrp(l="Mirror: ", ncb=1, v1=True, cal=[(1, "left"), (2, "left")], cw=[(1, 50), (2, 20)])
         cmds.text("1. Create joints, position/orient them, then create rig")
         cmds.button(l="Import Joints", w=280, h=50, bgc=(.7, .5, .5), c=self.joint_setup)
         cmds.separator(h=10)
@@ -75,7 +74,6 @@ class HandRig(object):
 
         cmds.showWindow(self.win)
         cmds.window(self.win, e=True, rtf=True)
-
 
     def joint_setup(self, *args):
         for jnt in list(self.joint_dictionary.keys()):
@@ -97,10 +95,9 @@ class HandRig(object):
                 continue
             jo = self.joint_dictionary[jnt]["orientation"]
             cmds.setAttr("{0}.jointOrient".format(jnt), jo[0], jo[1], jo[2])
-            
+
         for jnt in list(self.joint_dictionary.keys()):
             cmds.makeIdentity(jnt)
-
 
     def build_rig(self, *args):
 
@@ -117,18 +114,18 @@ class HandRig(object):
         for jnt in list(self.joint_dictionary.keys()):
             if cmds.objExists(jnt):
                 culledJnts.append(jnt)
-        
+
         self.leftJoints = [cmds.rename(x, "lf_{0}".format(x)) for x in culledJnts]
         self.sideJnts.append(self.leftJoints)
         self.add_to_bind_set(self.leftJoints)
         if self.mirrored:
-            self.rightJoints = cmds.mirrorJoint("lf_hand_JNT", mirrorBehavior=True, mirrorYZ=True, searchReplace = ["lf", "rt"])
+            self.rightJoints = cmds.mirrorJoint("lf_hand_JNT", mirrorBehavior=True, mirrorYZ=True, searchReplace=["lf", "rt"])
             self.sideJnts.append(self.rightJoints)
             self.add_to_bind_set(self.leftJoints)
 
         self.create_ctrls()
-        
-    def create_ctrls(self,*args):
+
+    def create_ctrls(self, *args):
         self.bindJoints = []
         self.ctrlSides = []
         # build rig for self.sides
@@ -140,7 +137,7 @@ class HandRig(object):
             if x == 1:
                 self.reverse_control(sideCtrl)
             rig.scale_nurbs_control(sideCtrl, .2, .2, .2)
-            
+
             # get rid of end joints
             for z in range(len(self.sideJnts[x])):
                 if "End" not in self.sideJnts[x][z]:
@@ -155,7 +152,7 @@ class HandRig(object):
             cmds.select("{0}_hand_JNTCtrl_GRP".format(self.sides[x]), r=True)
             cmds.select(hi=True)
             ctrlList = []
-            sel = cmds.ls(sl=True)        
+            sel = cmds.ls(sl=True)
             sel.reverse()
             list(set(sel))
             for y in sel:
@@ -165,7 +162,6 @@ class HandRig(object):
             self.add_to_ctrl_set(self.ctrlSides[x])
 
         self.hand_control_setup()
-
 
     def hand_control_setup(self, *args):
         for x in range(len(self.sides)):
@@ -179,7 +175,7 @@ class HandRig(object):
             for ctrl in self.ctrlSides[x]:
                 shp = cmds.listRelatives(ctrl, s=True)
                 if shp:
-                    if cmds.objectType(shp)=="nurbsCurve":
+                    if cmds.objectType(shp) == "nurbsCurve":
                         autoGrp = rig.group_freeze(ctrl, "auto")
                         manualGrp = rig.group_freeze(ctrl, "manual")
                         sideAutoGrpList.append(autoGrp)
@@ -193,7 +189,7 @@ class HandRig(object):
             cmds.xform(attachGrp, ws=True, preserve=True, rp=handPos)
 
             # create auto ctrls
-            autoCtrl = rig.create_control("{0}_hand_auto_CTRL".format(self.sides[x]), "circle", "y", self.colors[x+2])
+            autoCtrl = rig.create_control("{0}_hand_auto_CTRL".format(self.sides[x]), "circle", "y", self.colors[x + 2])
             autoGrp = rig.group_freeze(autoCtrl)
             rig.snap_to("{0}_hand_Ctrl_GRP".format(self.sides[x]), autoGrp)
             cmds.parent(autoGrp, "{0}_hand_Ctrl".format(self.sides[x]))
@@ -208,9 +204,8 @@ class HandRig(object):
             self.hookup_auto(autoCtrl, sideAutoGrpList)
             self.hookup_manual(autoCtrl, sideManGrpList)
 
-
     def create_finger_attrs(self, ctrl):
-        finger = [["index1", "index2", "index3", "index4"], ["middle1","middle2", "middle3", "middle4"], ["ring1","ring2", "ring3", "ring4"], ["pinky1", "pinky2", "pinky3", "pinky4"], ["thumb1", "thumb2", "thumb3"]]
+        finger = [["index1", "index2", "index3", "index4"], ["middle1", "middle2", "middle3", "middle4"], ["ring1", "ring2", "ring3", "ring4"], ["pinky1", "pinky2", "pinky3", "pinky4"], ["thumb1", "thumb2", "thumb3"]]
         attrDir = ["curl", "spread", "rotate"]
 
         for adir in attrDir:
@@ -218,13 +213,11 @@ class HandRig(object):
                 for knuck in fing:
                     attr = cmds.addAttr(ctrl, ln="{0}_{1}".format(knuck, adir), at="float", k=True)
 
-
     def add_to_bind_set(self, jlist):
         name = "BIND_SET"
         if not cmds.objExists(name):
             cmds.sets(name=name)
         cmds.sets(jlist, include=name)
-
 
     def add_to_ctrl_set(self, clist):
         name = "CTRL_SET"
@@ -239,11 +232,9 @@ class HandRig(object):
             if not rig.type_check(x, "transform"):
                 cmds.sets(x, remove=name)
 
-
     def reverse_control(self, ctrl=None):
         cmds.setAttr("{0}.rz".format(ctrl), 180)
         cmds.makeIdentity(ctrl, apply=True)
-
 
     def hookup_auto(self, dctrl, grpList, *args):
         # setup a set driven key for each of fist, spread, claw, point to each elem in the group
@@ -260,21 +251,20 @@ class HandRig(object):
 
         for y in ["fist", "spread", "point", "relax", "claw"]:
             for d in grps:
-                self.set_driven_key(dctrl+"."+y, d, 0, 0, 0)
+                self.set_driven_key(dctrl + "." + y, d, 0, 0, 0)
             cmds.setAttr("{0}.{1}".format(dctrl, y), 10)
             for x in range(len(grps)):
-                self.set_driven_key(dctrl+"."+y, grps[x], pd[y][ctrls[x]][0],pd[y][ctrls[x]][1],pd[y][ctrls[x]][2])
+                self.set_driven_key(dctrl + "." + y, grps[x], pd[y][ctrls[x]][0], pd[y][ctrls[x]][1], pd[y][ctrls[x]][2])
             cmds.setAttr("{0}.{1}".format(dctrl, y), 0)
 
     def set_driven_key(self, driver, driven, x, y, z):
-        cmds.setDrivenKeyframe(driven+".rx", cd=driver, value=x)
-        cmds.setDrivenKeyframe(driven+".ry", cd=driver, value=y)
-        cmds.setDrivenKeyframe(driven+".rz", cd=driver, value=z)
-
+        cmds.setDrivenKeyframe(driven + ".rx", cd=driver, value=x)
+        cmds.setDrivenKeyframe(driven + ".ry", cd=driver, value=y)
+        cmds.setDrivenKeyframe(driven + ".rz", cd=driver, value=z)
 
     def hookup_manual(self, ctrl, grpList, *args):
         # direct connections to group rotations
-        finger = [["index1", "index2", "index3", "index4"], ["middle1","middle2", "middle3", "middle4"], ["ring1","ring2", "ring3", "ring4"], ["pinky1", "pinky2", "pinky3", "pinky4"], ["thumb1", "thumb2", "thumb3"]]
+        finger = [["index1", "index2", "index3", "index4"], ["middle1", "middle2", "middle3", "middle4"], ["ring1", "ring2", "ring3", "ring4"], ["pinky1", "pinky2", "pinky3", "pinky4"], ["thumb1", "thumb2", "thumb3"]]
         attrDir = ["curl", "spread", "rotate"]
 
         side = ctrl.partition("_")[0]

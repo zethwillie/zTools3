@@ -11,12 +11,9 @@ import maya.cmds as cmds
 import maya.OpenMaya as om
 import math
 from functools import partial
-import zTools.rig.zbw_rig as rig
-import zTools.rig.zbw_curveExtrude as cExtrude
-import importlib
-importlib.reload(cExtrude)
-import zTools.rig.zbw_curveCVControls as zcc
-importlib.reload(zcc)
+import zTools3.rig.zbw_rig as rig
+import zTools3.rig.zbw_curveExtrude as cExtrude
+import zTools3.rig.zbw_curveCVControls as zcc
 #TODO---------------- on rebuild curves options: have checkbox for keep history, keep original
 #TODO ------------  extrude curve w options
 

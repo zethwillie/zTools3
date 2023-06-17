@@ -11,9 +11,9 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMaya as om
 
-from . import zbw_controlShapes as cshp
+import zbw_controlShapes as cshp
 import importlib
-importlib.reload(cshp)
+
 
 colors = {
     "red": 13,

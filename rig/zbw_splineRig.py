@@ -2,9 +2,7 @@ from functools import partial
 
 import maya.cmds as cmds
 
-import zTools.rig.zbw_rig as rig
-import importlib
-importlib.reload(rig)
+import zTools3.rig.zbw_rig as rig
 # get how many ctrls we want, then make curve have that many cvs
 # refactor this out to functions - outputs for api style
 

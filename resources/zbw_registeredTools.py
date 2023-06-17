@@ -33,7 +33,7 @@ zRigDict = {
     "proxyGeo":["zTools3.rig.zbw_createProxyGeo", "CreateProxyGeo"],
     "poseReader":["zTools3.rig.zbw_poseReader", "PoseReader"],
     "dupeBlends":["zTools3.rig.zbw_dupeBlends", "dupeBlends"],
-    "animPolish":["js_animPolish.js_animPolish_ui", "ui"],
+    "animPolish":["js_animPolish3.js_animPolish_ui", "ui"],
 }
 
 zAnimDict = {

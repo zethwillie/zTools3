@@ -1,9 +1,7 @@
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
-importlib.reload(rig)
-import zTools.zbw_tools as tools
-importlib.reload(tools)
+import zTools3.zbw_tools as tools
 
 #---------------- Don't scale top two joints? THen have to figure out how to grow or shrink the remaining (use a ramp value node or set range?) 
 #---------------- add a copy of last joint and put in there for ik spline

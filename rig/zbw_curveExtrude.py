@@ -1,16 +1,17 @@
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
 
 importlib.reload(rig)
 
 # ---------------- length drives which file texture we use
-#TODO - cap should be optional
-#TODO - keep history to orig curve optional
-#TODO - write own funcs to: a) align objs with cure at %, hook up moPath Node wo command (skip addDoubles)
+# TODO - cap should be optional
+# TODO - keep history to orig curve optional
+# TODO - write own funcs to: a) align objs with cure at %, hook up moPath Node wo command (skip addDoubles)
 
 
 widgets = {}
+
 
 def curveExtrudeUI():
     if cmds.window("crvExtrRigWin", exists=True):
@@ -407,7 +408,7 @@ def calculatePts(crv, *args):
 
 
 def rebuildCurve(curve, *args):
-    """ 
+    """
         rebuilds selected curves to specs in window
     """
     num = calculatePts(curve)
@@ -488,18 +489,18 @@ def texture(*args):
     # delete pNode and tNode
     cmds.delete(pNode, tNode)
 
-    # worry about length switch later when we populate the file node itself 
+    # worry about length switch later when we populate the file node itself
 
 
 def clearShaderConnections(ts="", geo="", *args):
     myShape = cmds.listRelatives(geo, s=True)[0]
     tsList = cmds.listAttr(ts, m=True, st=["*input*"])
     if tsList:
-        # delete empty entries? ? 
+        # delete empty entries? ?
         # for tsInput in tsList:
         #   shpList = cmds.connectionInfo("{0}.{1}.inShape".format(ts, tsInput), sfd=True)
         #   if not shpList:
-        #       cmds.removeMultiInstance("blinn1_TripleSwitch.{0}".format(tsInput))         
+        #       cmds.removeMultiInstance("blinn1_TripleSwitch.{0}".format(tsInput))
 
         for tsInput in tsList:
             shpList = cmds.connectionInfo("{0}.{1}.inShape".format(ts, tsInput), sfd=True).partition(".")

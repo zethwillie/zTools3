@@ -1,6 +1,5 @@
 ########################
 # File: zbw_curveCVControls.py
-# Date Modified: 08 Aug 2017
 # creator: Zeth Willie
 # Contact: zethwillie@gmail.com, catbuks.com, williework.blogspot.com
 # Description: puts controls on curve to drive it's shape node
@@ -8,7 +7,8 @@
 ########################
 
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
+
 
 def curve_CV_controls_execute(crv, *args):
     """
@@ -41,7 +41,7 @@ def curve_CV_controls_execute(crv, *args):
         cmds.setAttr("{0}.scale".format(ctrl), l=True, k=False)
         cmds.xform(grp, ws=True, t=pos)
 
-        dm = cmds.shadingNode("decomposeMatrix", asUtility=True,name="{0}_{1}_DM".format(crv, x))
+        dm = cmds.shadingNode("decomposeMatrix", asUtility=True, name="{0}_{1}_DM".format(crv, x))
         cmds.connectAttr("{0}.worldMatrix[0]".format(ctrl), "{0}.inputMatrix".format(dm))
         cmds.connectAttr("{0}.outputTranslate".format(dm), "{0}.controlPoints[{1}]".format(shp, x))
         ctrlGrps.append(grp)
@@ -58,9 +58,9 @@ def curve_CV_controls_execute(crv, *args):
         cmds.setAttr("{0}.inheritsTransform".format(inhGrp), 0)
 
     cmds.parent(ctrlGrps, xformGrp)
-    cmds.xform(crv, ws=True, t=(0,0,0))
-    cmds.xform(crv, ws=True, ro=(0,0,0))
-    cmds.xform(crv, a=True, s=(1,1,1))
+    cmds.xform(crv, ws=True, t=(0, 0, 0))
+    cmds.xform(crv, ws=True, ro=(0, 0, 0))
+    cmds.xform(crv, a=True, s=(1, 1, 1))
 
 
 def curveCVControls(*args):
@@ -72,4 +72,3 @@ def curveCVControls(*args):
     for crv in sel:
         if rig.type_check(crv, "nurbsCurve"):
             curve_CV_controls_execute(crv)
-

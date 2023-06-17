@@ -1,16 +1,11 @@
 import maya.cmds as cmds
-
-import zTools.rig.zbw_rigger_utils as zrt
-import importlib
-
-importlib.reload(zrt)
-import zTools.rig.zbw_rig as rig
-importlib.reload(rig)
 import maya.OpenMaya as om
-import zTools.rig.zbw_rigger_window as zrw
-importlib.reload(zrw)
 
-#----------------# for sides create a list w "orig", if mirror add "mir", replace all self.fkJoints.keys(), etc. . 
+import zTools3.rig.zbw_rigger_utils as zrt
+import zTools3.rig.zbw_rig as rig
+import zTools3.rig.zbw_rigger_window as zrw
+
+#----------------# for sides create a list w "orig", if mirror add "mir", replace all self.fkJoints.keys(), etc. .
 #---------------- also create self.sideName with orig and mir prefixes. . . ?
 #---------------- add meta data setup. . . network nodes with message multi attrs
 
@@ -21,12 +16,12 @@ class BaseLimbUI(zrw.RiggerWindow):
         self.height = 600
 
         self.winInitName = "zbw_limbUI"
-        self.winTitle="Base Limb UI"
+        self.winTitle = "Base Limb UI"
         # common
         self.defaultLimbName = "limb"
         self.defaultOrigPrefix = "L"
         self.defaultMirPrefix = "R"
-        self.pts = [(5,20, 0),(15, 20, -1), (25, 20, 0), (27, 20, 0)]
+        self.pts = [(5, 20, 0), (15, 20, -1), (25, 20, 0), (27, 20, 0)]
         self.baseNames = ["limb1", "limb2", "limb3", "limb4"]
         self.secRotOrderJnts = [2]
         self.ikShape = "arrowCross"
@@ -44,13 +39,13 @@ class BaseLimb(object):
     def __init__(self, fromUI=True):
         self.origFkJnts = []
         self.mirrorFkJnts = []
-        
+
         # turn on decompose matrix plugin
 
         # these are the default values of the limb
-        self.pts = [(5,20, 0),(15, 20, -1), (25, 20, 0), (27, 20, 0)] # list of pt positions for initial jnts
-        self.part = "arm" # ie. "arm"
-        self.baseNames = ["shoulder", "elbow", "wrist", "wristEnd"] # list of names of joints (i.e ["shoulder", "elbow", etc]). xtra for orienting!
+        self.pts = [(5, 20, 0), (15, 20, -1), (25, 20, 0), (27, 20, 0)]  # list of pt positions for initial jnts
+        self.part = "arm"  # ie. "arm"
+        self.baseNames = ["shoulder", "elbow", "wrist", "wristEnd"]  # list of names of joints (i.e ["shoulder", "elbow", etc]). xtra for orienting!
         self.jntSuffix = "JNT"      # what is the suffix for jnts
         self.ctrlSuffix = "CTRL"
         self.groupSuffix = "GRP"
@@ -90,17 +85,15 @@ class BaseLimb(object):
         self.twistJoints = {}
         self.sideGroups = {}
 
-
     def pose_initial_joints(self):
-    # get and pass values for orient order and uporient axis
-    # put joint in ref display layer temporarily
+        # get and pass values for orient order and uporient axis
+        # put joint in ref display layer temporarily
         self.joints, self.poseCtrls, self.poseGrps, self.octrls, self.ogrps, self.poseConstraints = zrt.initial_pose_joints(ptsList=self.pts, baseNames=self.baseNames, orientOrder=self.orientOrder, upOrientAxis=self.upOrientAxis, primaryAxis=self.primaryAxis, upAxis=self.upAxis)
 
         # put tmp joints in a display layer and set to reference
         cmds.select(self.joints, r=True)
         self.dl = cmds.createDisplayLayer(name="tmp_{0}_jnt_DL".format(self.part))
         cmds.setAttr("{0}.displayType".format(self.dl), 2)
-
 
     def make_limb_rig(self):
         """
@@ -110,7 +103,7 @@ class BaseLimb(object):
         # add manual adjust joint orientation here. . .
         if self.mirror:
             self.mirror_joints()
-        self.setup_dictionaries()        
+        self.setup_dictionaries()
         self.create_duplicate_chains()
         self.create_fk_rig()
         self.create_fkik_switch()
@@ -125,7 +118,6 @@ class BaseLimb(object):
         self.create_sets()
         self.label_deform_joints()
 
-
     def clean_initial_joints(self):
         cmds.delete(self.dl)
 
@@ -134,12 +126,11 @@ class BaseLimb(object):
         # set rotate orders on listed jnts
         for i in self.secRotOrderJnts:
             cmds.joint(self.origFkJnts[i], edit=True, rotationOrder=self.secRotOrder)
-        
+
         # store orient data on joints for serialization. . . ?
 
     def mirror_joints(self):
         self.mirrorFkJnts = zrt.mirror_joint_chain(self.origFkJnts[0], self.origPrefix, self.mirPrefix, self.mirrorAxis)
-
 
     def setup_dictionaries(self):
         """initialize dictionaries for the actual rig content"""
@@ -156,25 +147,24 @@ class BaseLimb(object):
         if self.mirror:
             self.side["mir"] = self.mirPrefix
             self.fkJoints["mir"] = self.mirrorFkJnts
-            self.fkCtrls["mir"] = None # []
+            self.fkCtrls["mir"] = None  # []
             self.fkCtrlGrps["mir"] = None
-            self.switchCtrls["mir"] = None # []
-            self.ikCtrls["mir"] = None # [ikCtrl, pvCtrl, pvLine]
+            self.switchCtrls["mir"] = None  # []
+            self.ikCtrls["mir"] = None  # [ikCtrl, pvCtrl, pvLine]
             self.ikCtrlGrps["mir"] = None  # [ikCtrlGrp, pvCtrlGrp, pvLineGrp]
             self.sideGroups["mir"] = None   # [lf_arm_GRP, lf_arm_attach_GRP]
             self.twistJoints["mir"] = []   # [lf_arm_upTwist1_JNT, etc]
-            self.ikHandles["mir"] = []      #[lf_leg_ikHandle, lf_ball_ikHandle]
-
+            self.ikHandles["mir"] = []  # [lf_leg_ikHandle, lf_ball_ikHandle]
 
     def create_duplicate_chains(self):
         # for key in jntDict, make duplicates. . . (put into dictionary)
         for side in list(self.fkJoints.keys()):
-            topJnt = self.fkJoints[side][0] 
-          
+            topJnt = self.fkJoints[side][0]
+
             # make deform jnts
             deforms = zrt.duplicate_and_rename_chain(topJnt, "deform")
             self.deformJoints[side] = deforms
-            
+
             # if we're making IK stuff
             if self.createIK:
                 # make IK
@@ -183,7 +173,6 @@ class BaseLimb(object):
                 # make measure
                 measures = zrt.duplicate_and_rename_chain(topJnt, "measure")
                 self.measureJoints[side] = measures
-
 
     def create_fk_rig(self):
         for side in list(self.fkJoints.keys()):
@@ -203,26 +192,25 @@ class BaseLimb(object):
             for i in range(len(fkJoints)):
                 pc = cmds.parentConstraint(ctrls[i], fkJoints[i])
                 sc = cmds.scaleConstraint(ctrls[i], fkJoints[i])
-        
-        # add gimble ctrls? just a group and control above each ctrl 
-        # create group for arm to go in
 
+        # add gimble ctrls? just a group and control above each ctrl
+        # create group for arm to go in
 
     def create_fkik_switch(self):
         for side in list(self.deformJoints.keys()):
             # this defaults to the third joint in chain
             ctrl = rig.create_control(name="{0}_{1}_IkFkSwitch_{2}".format(self.side[side], self.part, self.ctrlSuffix), type="star", axis=self.primaryAxis)
             grp = rig.group_freeze(ctrl, self.groupSuffix)
-        #get scale factor
+        # get scale factor
             root = cmds.xform(self.deformJoints[side][0], q=True, ws=True, rp=True)
             mid = cmds.xform(self.deformJoints[side][1], q=True, ws=True, rp=True)
             end = cmds.xform(self.deformJoints[side][2], q=True, ws=True, rp=True)
-            distVec = om.MVector(mid[0]-end[0], mid[1]-end[1], mid[2]-end[2])
+            distVec = om.MVector(mid[0] - end[0], mid[1] - end[1], mid[2] - end[2])
             dist = distVec.length()
             mv = zrt.get_planar_position(root, mid, end, percent=0.05, dist=dist)
             rig.snap_to(self.deformJoints[side][2], grp)
             cmds.xform(grp, ws=True, t=(mv.x, mv.y, mv.z))
-            
+
             rig.strip_transforms(ctrl)
             cmds.addAttr(ctrl, ln="fkik", at="float", min=0.0, max=1.0, defaultValue=0, keyable=True)
 
@@ -230,7 +218,6 @@ class BaseLimb(object):
             pc = cmds.parentConstraint(self.deformJoints[side][2], grp, mo=True)
 
             self.switchCtrls[side] = ctrl
-
 
     def create_ik_rig(self, leg=False):
         for side in list(self.ikJoints.keys()):
@@ -247,7 +234,7 @@ class BaseLimb(object):
             if leg:
                 ac = cmds.aimConstraint(self.deformJoints[side][3], grp, aim=[0, 0, 1], upVector=[0, 1, 0], skip=["x", "z"])
                 cmds.delete(ac)
-                
+
             cmds.parent(handle, ctrl)
             oc = cmds.orientConstraint(ctrl, jnts[2], mo=True)
             self.ikCtrls[side] = [ctrl]
@@ -274,7 +261,7 @@ class BaseLimb(object):
             if side == "orig":
                 pvline = "{0}_{1}_poleVec_Line".format(self.origPrefix, self.part)
             elif side == "mir":
-                pvline = "{0}_{1}_poleVec_Line".format(self.mirPrefix, self.part)        
+                pvline = "{0}_{1}_poleVec_Line".format(self.mirPrefix, self.part)
             pvLine = zrt.create_line_between(pv, jnts[1], pvline)
             pvGrp = cmds.group(em=True, name="{0}_{1}".format(pvLine, self.groupSuffix))
             cmds.parent(pvLine, pvGrp)
@@ -284,7 +271,7 @@ class BaseLimb(object):
             shp = cmds.listRelatives(pvLine, s=True)[0]
             cmds.setAttr("{0}.overrideEnabled".format(shp), 1)
             cmds.setAttr("{0}.overrideDisplayType".format(shp), 2)
-            #connect to switch
+            # connect to switch
             cmds.addAttr(self.switchCtrls[side], ln="poleVecLineVis", at="short", min=0, max=1, dv=1, k=True)
             cmds.connectAttr("{0}.poleVecLineVis".format(self.switchCtrls[side]), "{0}.overrideVisibility".format(shp))
         # option for no flip pv?
@@ -293,12 +280,11 @@ class BaseLimb(object):
         # zip up fk, ik and deform joints for easier stuff
         for side in list(self.fkJoints.keys()):
             joints = list(zip(self.fkJoints[side], self.ikJoints[side], self.deformJoints[side]))
-            # should we parent constraint these? 
+            # should we parent constraint these?
             for grp in joints:
                 zrt.create_parent_reverse_network(grp[:-1], grp[-1], "{0}.fkik".format(self.switchCtrls[side]), index=0)
 
     # a way to do gimbles in both ik and fk? create gimbel ctrl under grp. grp is parent constrained to ik/fk ctrls (like deform joint). ctrl then is what parent constrains to the deform joints
-
 
     def create_ik_stretch(self):
         # LET"S DO THIS SCALE-WISE FOR NOW
@@ -321,7 +307,6 @@ class BaseLimb(object):
             cmds.connectAttr("{0}.output.outputX".format(self.upMult), "{0}.sx".format(self.ikJoints[side][0]))
             cmds.connectAttr("{0}.output.outputX".format(self.loMult), "{0}.sx".format(self.ikJoints[side][1]))
 
-
     def create_rigSide_groups(self):
         for side in list(self.fkJoints.keys()):
             if side == "orig":
@@ -337,12 +322,11 @@ class BaseLimb(object):
             attachGrp = cmds.duplicate(sideGrp, name="{0}_{1}_attach_{2}".format(sideName, self.part, self.groupSuffix))[0]
 
             cmds.parent(sideGrp, attachGrp)
-            sideList =[self.fkJoints[side][0], self.ikJoints[side][0], self.measureJoints[side][0], self.deformJoints[side][0], self.fkCtrlGrps[side][0]]
+            sideList = [self.fkJoints[side][0], self.ikJoints[side][0], self.measureJoints[side][0], self.deformJoints[side][0], self.fkCtrlGrps[side][0]]
 
             cmds.parent(sideList, sideGrp)
 
             self.sideGroups[side] = [sideGrp, attachGrp]
-
 
     def create_twist_extraction_rig(self):
         for side in list(self.deformJoints.keys()):
@@ -365,7 +349,6 @@ class BaseLimb(object):
 
         # add locator at actual elbow that is parent of other two?
 
-
     def create_ik_group(self):
         ikName = "ik_world_rig_GRP"
         if not cmds.objExists(ikName):
@@ -384,9 +367,8 @@ class BaseLimb(object):
             for stuff in ikStuff:
                 cmds.parent(stuff, ikGrp)
 
-
     def clean_up_rig(self):
-    # clean up rig (hide jnts, connect vis, etc)
+        # clean up rig (hide jnts, connect vis, etc)
         # hide jnts
         for side in list(self.fkJoints.keys()):
             if side == "orig":
@@ -397,15 +379,15 @@ class BaseLimb(object):
             hideJnts = [self.ikJoints[side][0], self.fkJoints[side][0], self.measureJoints[side][0]]
             for obj in hideJnts:
                 cmds.setAttr("{0}.v".format(obj), 0)
-        # no inherit stuff? 
+        # no inherit stuff?
             if not cmds.objExists("rig_noInherit_GRP".format(self.groupSuffix)):
                 noInher = cmds.group(em=True, name="rig_noInherit_GRP")
                 cmds.setAttr("{0}.inheritsTransform".format(noInher), 0)
             noInher = "rig_noInherit_GRP"
             cmds.parent(self.ikCtrlGrps[side][2], noInher)
-        
+
         # color controls
-            #how to do this? color attr from UI? 
+            # how to do this? color attr from UI?
             if side == "orig":
                 color = "blue"
                 secColor = "lightBlue"
@@ -417,7 +399,7 @@ class BaseLimb(object):
             lightColor = [self.ikCtrls[side][1:], [self.switchCtrls[side]]]
 
             for obj in primColor:
-                for ctrl in obj: 
+                for ctrl in obj:
                     rig.assign_color(obj=ctrl, clr=color)
             for obj in lightColor:
                 for ctrl in obj:
@@ -437,7 +419,7 @@ class BaseLimb(object):
             # connect rotate orders
             for i in range(len(self.fkJoints[side])):
                 roattr = zrt.create_rotate_order_attr(self.switchCtrls[side], "{0}RotateOrder".format(self.baseNames[i]))
-                
+
                 objList = [self.fkJoints[side][i], self.ikJoints[side][i], self.deformJoints[side][i], self.fkCtrls[side][i], self.fkCtrlGrps[side][i], self.ikCtrls[side][0], self.ikCtrlGrps[side][0]]
 
                 for obj in objList:
@@ -456,8 +438,6 @@ class BaseLimb(object):
                 else:
                     roindex = roList.index(origRotOrder)
                     cmds.setAttr(roattr, roindex)
-
-
 
     def label_deform_joints(self):
         for side in list(self.fkJoints.keys()):
@@ -478,7 +458,6 @@ class BaseLimb(object):
                 cmds.setAttr("{0}.side".format(jnt), sideNum)
                 cmds.setAttr("{0}.type".format(jnt), jointType)
                 cmds.setAttr("{0}.otherType".format(jnt), joint, type="string")
-
 
     def create_sets(self):
         # set for all controls
@@ -506,5 +485,5 @@ class BaseLimb(object):
                 cmds.sets(jntList, addElement="BIND_SET")
 
     # add in game export rig
-    # add option for game exportable joints QSS 
-    # option for ribbon setup in here? 
+    # add option for game exportable joints QSS
+    # option for ribbon setup in here?

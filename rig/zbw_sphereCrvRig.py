@@ -1,11 +1,9 @@
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
-import importlib
-importlib.reload(rig)
+import zTools3.rig.zbw_rig as rig
 from functools import partial
 
 
-#---------------- make this all a class? 
+#---------------- make this all a class?
 
 upJntProxyGrpCtrls = {}
 downJntProxyGrpCtrls = {}
@@ -15,31 +13,31 @@ highResCurves = []
 ctrlsUp = []
 ctrlsDwn = []
 
+
 def sphere_curve_rig_UI(*args):
     if cmds.window("crvRigJntWin", exists=True):
         cmds.deleteUI("crvRigJntWin")
 
-    w, h= 400, 300
+    w, h = 400, 300
 
-    widgets["win"] = cmds.window("crvRigJntWin", t="zbw_curveJntRig", w=w,h=h)
+    widgets["win"] = cmds.window("crvRigJntWin", t="zbw_curveJntRig", w=w, h=h)
     widgets["mainCLO"] = cmds.columnLayout()
 
-
-    widgets["numCtrlIFG"] = cmds.intFieldGrp(l="Number of Ctrls:", cal=[(1,"left"), (2,"left")], cw=[(1,120), (2,50)], v1=5)
-    widgets["nameTFG"] = cmds.textFieldGrp(l="Rig Name (i.e. lfEye):", cal=[(1,"left"), (2,"left"), (3,"left")], cw=[(1,120), (2,280), (3,30)], tx="eye")
-    widgets["cntrPivTFBG"] = cmds.textFieldButtonGrp(l="Center pivot object:", bl="<<<", cal=[(1,"left"), (2,"left"), (3,"left")], cw=[(1,120), (2,280), (3,30)], bc=partial(populate_curve_field, "cntrPivTFBG"), cc=partial(second_fill, "center"), tx="centerLoc")
-    widgets["upLocTFBG"] = cmds.textFieldButtonGrp(l="Aim up object:", bl="<<<", cal=[(1,"left"), (2,"left"), (3,"left")], cw=[(1,120), (2,280), (3,30)], bc=partial(populate_curve_field, "upLocTFBG"), cc=partial(second_fill, "up"), tx="upLoc")
+    widgets["numCtrlIFG"] = cmds.intFieldGrp(l="Number of Ctrls:", cal=[(1, "left"), (2, "left")], cw=[(1, 120), (2, 50)], v1=5)
+    widgets["nameTFG"] = cmds.textFieldGrp(l="Rig Name (i.e. lfEye):", cal=[(1, "left"), (2, "left"), (3, "left")], cw=[(1, 120), (2, 280), (3, 30)], tx="eye")
+    widgets["cntrPivTFBG"] = cmds.textFieldButtonGrp(l="Center pivot object:", bl="<<<", cal=[(1, "left"), (2, "left"), (3, "left")], cw=[(1, 120), (2, 280), (3, 30)], bc=partial(populate_curve_field, "cntrPivTFBG"), cc=partial(second_fill, "center"), tx="centerLoc")
+    widgets["upLocTFBG"] = cmds.textFieldButtonGrp(l="Aim up object:", bl="<<<", cal=[(1, "left"), (2, "left"), (3, "left")], cw=[(1, 120), (2, 280), (3, 30)], bc=partial(populate_curve_field, "upLocTFBG"), cc=partial(second_fill, "up"), tx="upLoc")
     cmds.separator(h=10)
 
-    widgets["upCrvTFBG"] = cmds.textFieldButtonGrp(l="First Curve", bl="<<<", cal=[(1,"left"), (2,"left"), (3,"left")], cw=[(1,120), (2,280), (3,30)], bc=partial(populate_curve_field, "upCrvTFBG"), tx="topCrv")
-    widgets["upNameTFG"] = cmds.textFieldGrp(l="1st Suffix (i.e.'Top')", cal=[(1,"left"), (2,"left")], cw=[(1,120), (2,280)], tx="Top")
+    widgets["upCrvTFBG"] = cmds.textFieldButtonGrp(l="First Curve", bl="<<<", cal=[(1, "left"), (2, "left"), (3, "left")], cw=[(1, 120), (2, 280), (3, 30)], bc=partial(populate_curve_field, "upCrvTFBG"), tx="topCrv")
+    widgets["upNameTFG"] = cmds.textFieldGrp(l="1st Suffix (i.e.'Top')", cal=[(1, "left"), (2, "left")], cw=[(1, 120), (2, 280)], tx="Top")
     cmds.separator(h=10)
 
-    widgets["secondCBG"] = cmds.checkBoxGrp(l="Create Second Curve?", ncb=1, v1=0, cal=[(1,"left"), (2,"left")], cc=toggle_second, en=True)
-    widgets["downCrvTFBG"] = cmds.textFieldButtonGrp(l="Second Curve", bl="<<<", cal=[(1,"left"), (2,"left"), (3,"left")], en=False, cw=[(1,120), (2,280), (3,30)], bc=partial(populate_curve_field, "downCrvTFBG"), tx="downCrv")
-    widgets["downNameTFG"] = cmds.textFieldGrp(l="2nd Suffix (i.e. 'Dwn')", cal=[(1,"left"), (2,"left")], cw=[(1,120), (2,280)], en=False, tx="Dwn")
-    widgets["cntrPiv2TFBG"] = cmds.textFieldButtonGrp(l="Center pivot object:", bl="<<<", cal=[(1,"left"), (2,"left"), (3,"left")], cw=[(1,120), (2,280), (3,30)], bc=partial(populate_curve_field, "cntrPivTFBG"), en=False, tx="centerLoc")
-    widgets["upLoc2TFBG"] = cmds.textFieldButtonGrp(l="Aim up object:", bl="<<<", cal=[(1,"left"), (2,"left"), (3,"left")], cw=[(1,120), (2,280), (3,30)], bc=partial(populate_curve_field, "upLoc2TFBG"), en=False, tx="upLoc")
+    widgets["secondCBG"] = cmds.checkBoxGrp(l="Create Second Curve?", ncb=1, v1=0, cal=[(1, "left"), (2, "left")], cc=toggle_second, en=True)
+    widgets["downCrvTFBG"] = cmds.textFieldButtonGrp(l="Second Curve", bl="<<<", cal=[(1, "left"), (2, "left"), (3, "left")], en=False, cw=[(1, 120), (2, 280), (3, 30)], bc=partial(populate_curve_field, "downCrvTFBG"), tx="downCrv")
+    widgets["downNameTFG"] = cmds.textFieldGrp(l="2nd Suffix (i.e. 'Dwn')", cal=[(1, "left"), (2, "left")], cw=[(1, 120), (2, 280)], en=False, tx="Dwn")
+    widgets["cntrPiv2TFBG"] = cmds.textFieldButtonGrp(l="Center pivot object:", bl="<<<", cal=[(1, "left"), (2, "left"), (3, "left")], cw=[(1, 120), (2, 280), (3, 30)], bc=partial(populate_curve_field, "cntrPivTFBG"), en=False, tx="centerLoc")
+    widgets["upLoc2TFBG"] = cmds.textFieldButtonGrp(l="Aim up object:", bl="<<<", cal=[(1, "left"), (2, "left"), (3, "left")], cw=[(1, 120), (2, 280), (3, 30)], bc=partial(populate_curve_field, "upLoc2TFBG"), en=False, tx="upLoc")
     cmds.separator(h=10)
 
     widgets["execBut"] = cmds.button(l="create base rig!", w=w, c=pass_to_execute)
@@ -50,9 +48,9 @@ def sphere_curve_rig_UI(*args):
 
     # widgets["scCBG"] = cmds.checkBoxGrp(l="Set up smart close?", ncb=1, v1=0, cal=[(1,"left"), (2,"left")], en=True)
 
-
     cmds.window(widgets["win"], e=True, w=5, h=5, resizeToFitChildren=True, sizeable=True)
     cmds.showWindow(widgets["win"])
+
 
 def second_fill(tfg, *args):
     print("in center fill")
@@ -64,6 +62,7 @@ def second_fill(tfg, *args):
         obj = cmds.textFieldButtonGrp(widgets["upLocTFBG"], q=True, tx=True)
         cmds.textFieldButtonGrp(widgets["upLoc2TFBG"], e=True, tx=obj)
 
+
 def toggle_second(*args):
     state = cmds.checkBoxGrp(widgets["secondCBG"], q=True, v1=True)
     if state:
@@ -71,20 +70,21 @@ def toggle_second(*args):
         cmds.textFieldButtonGrp(widgets['cntrPiv2TFBG'], e=True, en=True)
         cmds.textFieldButtonGrp(widgets['upLoc2TFBG'], e=True, en=True)
         cmds.textFieldGrp(widgets["downNameTFG"], e=True, en=True)
-        cmds.button(widgets["closeBut"], e=True, en=True)       
+        cmds.button(widgets["closeBut"], e=True, en=True)
     else:
         cmds.textFieldButtonGrp(widgets['downCrvTFBG'], e=True, en=False)
         cmds.textFieldButtonGrp(widgets['cntrPiv2TFBG'], e=True, en=False)
         cmds.textFieldButtonGrp(widgets['upLoc2TFBG'], e=True, en=False)
-        cmds.textFieldGrp(widgets["downNameTFG"], e=True, en=False)     
-        cmds.button(widgets["closeBut"], e=True, en=False)  
+        cmds.textFieldGrp(widgets["downNameTFG"], e=True, en=False)
+        cmds.button(widgets["closeBut"], e=True, en=False)
+
 
 def populate_curve_field(tfgKey="", *args):
 
-#TODO   make this a message attr?
+    # TODO   make this a message attr?
     if tfgKey not in ["cntrPivTFBG", "cntrPiv2TFBG", "upLoc2TFBG", "upLocTFBG"]:
         sel = cmds.ls(sl=True)
-        if sel and len(sel)!=1:
+        if sel and len(sel) != 1:
             cmds.warning("only select the curve you want to rig up!")
         else:
             if rig.type_check(sel[0], "nurbsCurve"):
@@ -93,17 +93,18 @@ def populate_curve_field(tfgKey="", *args):
                 cmds.warning("That's not a curve!")
     else:
         sel = cmds.ls(sl=True)
-        if sel and len(sel)!=1:
+        if sel and len(sel) != 1:
             cmds.warning("only select the object you want to rig up!")
         else:
             cmds.textFieldButtonGrp(widgets[tfgKey], e=True, tx=sel[0])
             if tfgKey == "upLocTFBG":
                 cmds.textFieldButtonGrp(widgets["upLoc2TFBG"], e=True, tx=sel[0])
             if tfgKey == "cntrPivTFBG":
-                cmds.textFieldButtonGrp(widgets["cntrPiv2TFBG"], e=True, tx=sel[0])         
+                cmds.textFieldButtonGrp(widgets["cntrPiv2TFBG"], e=True, tx=sel[0])
+
 
 def pass_to_execute(*args):
-    
+
     lowResCurves = []
     highResCurves = []
 
@@ -134,16 +135,16 @@ def pass_to_execute(*args):
         cmds.warning("Some fields weren't filled out for the second curve! Undo and try again!")
         return
 
+
 def curve_joint_rig_execute(numCtrls=5, centerLoc="", c="", name="", crvType="up", *args):
-        
+
     #crv = cmds.curve(d=3, ep=pts)
     #---------------- create the curve, ideally from the geo
     #---------------- select the curve(s), maybe below is for each curve ( or option to do up and low curve at once with same center, etc )
     #---------------- UI shold do this stuff in steps so that one has time adjust the curves/controls, etc before moving onto the next step
 
-#---------------- ui options:  up/down crvs or just one, smart close, how many ctsl?, option to create curve from vtx selection/make live? curve shoudl be linear
-#----------------              selection/typein field grps for curves, maybe options for hooking directly or with groups
-
+    #---------------- ui options:  up/down crvs or just one, smart close, how many ctsl?, option to create curve from vtx selection/make live? curve shoudl be linear
+    #----------------              selection/typein field grps for curves, maybe options for hooking directly or with groups
 
     hi = "HIGH"
     lo = "CTRL"
@@ -167,15 +168,15 @@ def curve_joint_rig_execute(numCtrls=5, centerLoc="", c="", name="", crvType="up
         endJnt = cmds.joint(n="endJnt_{0}{1}".format(crv, x), position=locPos)
         cmds.select(cl=True)
         cmds.joint(baseJnt, e=True, oj="xyz", sao="yup", ch=True)
-        
+
         cmds.parent(baseJnt, jntGrp)
         cmds.parent(loc, locGrp)
-        
-        ac = cmds.aimConstraint(loc, baseJnt, mo=False, wuo="upLoc", wut="object", aim=(1,0,0), u=(0,1,0))
+
+        ac = cmds.aimConstraint(loc, baseJnt, mo=False, wuo="upLoc", wut="object", aim=(1, 0, 0), u=(0, 1, 0))
     # put ctrls on the indiv jnts, if someone should want them
 
     # dupe curve, rebuild to 5
-    ctrlCrv = rig.rebuild_curve(curve = crv, num =numCtrls - 1, name="{0}_{1}_Crv".format(name, lo), keep=True, ch=False)
+    ctrlCrv = rig.rebuild_curve(curve=crv, num=numCtrls - 1, name="{0}_{1}_Crv".format(name, lo), keep=True, ch=False)
 # rebuild to 5
     # put jnts at the eps
     ctrlEps = cmds.ls("{0}.ep[*]".format(ctrlCrv), fl=True)
@@ -195,9 +196,9 @@ def curve_joint_rig_execute(numCtrls=5, centerLoc="", c="", name="", crvType="up
     for g in bndGrps:
         cmds.parent(g, bndJntGrp)
 
-    wireNode = cmds.wire(crv, en=1, gw=True, ce=0, li=0, w=ctrlCrv, name = "{0}_wire".format(name))[0]
+    wireNode = cmds.wire(crv, en=1, gw=True, ce=0, li=0, w=ctrlCrv, name="{0}_wire".format(name))[0]
     wireGroup = "{0}Group".format(ctrlCrv)
-    
+
     cmds.parent(wireGroup, crvGrp)
     cmds.parent(crv, crvGrp)
 
@@ -256,10 +257,10 @@ def smart_close(*args):
     name = cmds.textFieldGrp(widgets["nameTFG"], q=True, tx=True)
     upSuf = cmds.textFieldGrp(widgets["upNameTFG"], q=True, tx=True)
     dwnSuf = cmds.textFieldGrp(widgets["downNameTFG"], q=True, tx=True)
-    topMidCtrl = ctrlsUp[len(ctrlsUp)/2]
-    downMidCtrl = ctrlsUp[len(ctrlsDwn)/2]
-    
-    if len(lowResCurves)==2 and len(highResCurves)==2:
+    topMidCtrl = ctrlsUp[len(ctrlsUp) / 2]
+    downMidCtrl = ctrlsUp[len(ctrlsDwn) / 2]
+
+    if len(lowResCurves) == 2 and len(highResCurves) == 2:
         tmpCloseLow = cmds.duplicate(lowResCurves[0], n="{0}_closeLowTmpCrv".format(name))[0]
         cmds.parent(tmpCloseLow, w=True)
 
@@ -279,9 +280,9 @@ def smart_close(*args):
 
         cmds.setAttr(lowUpAttr, 1)
         cmds.setAttr(lowDwnAttr, 0)
-        closeUpHigh = cmds.duplicate(highResCurves[0], n="{0}_HI_{1}_CLOSE_CRV".format(name, upSuf.upper() ))[0]
+        closeUpHigh = cmds.duplicate(highResCurves[0], n="{0}_HI_{1}_CLOSE_CRV".format(name, upSuf.upper()))[0]
         cmds.parent(closeUpHigh, w=True)
-        upHighWire = cmds.wire(closeUpHigh, en=1, gw=True, ce=0, li=0, w=closeLow, name = "{0}_CLS_UP_WIRE".format(name))[0]
+        upHighWire = cmds.wire(closeUpHigh, en=1, gw=True, ce=0, li=0, w=closeLow, name="{0}_CLS_UP_WIRE".format(name))[0]
         wireUpBaseCrv = "{0}BaseWire".format(closeLow)
         cmds.setAttr("{0}.scale[0]".format(upHighWire), 0)
 #---------------- set up blend shape on high res curve (drive high res with wire driven curve)
@@ -289,13 +290,14 @@ def smart_close(*args):
 
         cmds.setAttr(lowUpAttr, 0)
         cmds.setAttr(lowDwnAttr, 1)
-        closeDwnHigh = cmds.duplicate(highResCurves[1], n="{0}_HI_{1}_CLOSE_CRV".format(name, dwnSuf.upper() ))[0]
+        closeDwnHigh = cmds.duplicate(highResCurves[1], n="{0}_HI_{1}_CLOSE_CRV".format(name, dwnSuf.upper()))[0]
         cmds.parent(closeDwnHigh, w=True)
-        dwnHighWire = cmds.wire(closeDwnHigh, en=1, gw=True, ce=0, li=0, w=closeLow, name = "{0}_CLS_DWN_WIRE".format(name))[0]
+        dwnHighWire = cmds.wire(closeDwnHigh, en=1, gw=True, ce=0, li=0, w=closeLow, name="{0}_CLS_DWN_WIRE".format(name))[0]
         wireDwnBase = "{0}BaseWire".format(closeLow)
         cmds.setAttr("{0}.scale[0]".format(dwnHighWire), 0)
 #---------------- set up blend shape on high res curve (drive high res with wire driven curve)
 #---------------- set up the center ctrl to drive this BS
+
 
 """
 dupe lores crv (upper?) and pump both low res crvs into that a blend shape (this is blinkcrv)
@@ -304,6 +306,7 @@ Dupe each hires crv and connect via wire deformer (set scale of wireDef to 0) to
 and push those hirez dupes as blend shapes (end of chain) into the existing hirez crvs. These blend drive the blinking of each hirez
 also: like the two ends (maybe just have one control for both top and bottom if we're doing both)
 """
+
 
 def sphereCrvRig():
     sphere_curve_rig_UI()

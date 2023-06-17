@@ -1,315 +1,288 @@
-########################
-#file: zbw_messageMapper.py
-#author: zeth willie
-#contact: zeth@catbuks.com, www.williework.blogspot.com, https://github.com/zethwillie
-#date modified: 09/23/12
-#
-#notes: for checking and creating message attributes for objs in the scene (through UI).
-#to run: import zbw_messageMapper; zbw_messageMapper.messageMapper()
-########################
+# message attribute mapper - maya only
 
-import maya.cmds as cmds
-from functools import partial
+from PySide2 import QtCore, QtGui, QtWidgets
+from shiboken2 import wrapInstance
 
-#create a window
-def zbw_mmUI():
-    """the UI for the script"""
+import maya.cmds as mc
+import maya.OpenMayaUI as omui
 
-    if (cmds.window('`UI', exists=True)):
-        cmds.deleteUI('zbw_messageMapperUI', window=True)
-        cmds.windowPref('zbw_messageMapperUI', remove=True)
-    window=cmds.window('zbw_messageMapperUI', widthHeight=(600,400), title='zbw_messageMapper')
 
-    cmds.tabLayout(h=400)
-    cmds.columnLayout("mmAddNewConnections", h=400)
-    #2nd small column for the persistant UI
-    cmds.columnLayout(w=400, h=100)
-    cmds.textFieldButtonGrp('zbw_tfbg_baseObj', cal=(1, "left"), cw3=(75, 200, 75), label="base object", w=400, bl="choose object", bc=partial(zbw_mmAddBase, "zbw_tfbg_baseObj", "clear"))
-
-    #button to create new message/obj field groups
-    cmds.separator(h=20, st="single")
-    cmds.button(w=150, l="add new message attr/obj", c=zbw_mmAddMObjs)
-    cmds.separator(h=20, st="single")
-
-    cmds.setParent(u=True)
-    cmds.rowColumnLayout("mmRCLayout", nc=2, co=(2, "left", 30))
-
-    #back up to the 2nd columnLayout
-    cmds.setParent(u=True)
-
-    cmds.separator(h=20, st="single")
-    #create button to delete last pair of text fields
-    cmds.button("deleteLastButton", w=150, bgc=(.5,0,0), l="delete last attr/obj pair", c=zbw_mmDeleteLast)
-    cmds.separator(h=20, st="double")
-
-    #button to do connect all the attr/messages
-    cmds.button("createMessageButton", w=150, bgc=(0,.5,0), l="create messages", c=zbw_mmConnectM)
-
-    #back up to the main column
-    cmds.setParent(u=True)
-    #back up to the tab
-    cmds.setParent(u=True)
-    #new tab
-    cmds.columnLayout("existingMessages", w=600, h=400)
-
-    #Here we add stuff to the second tab
-    cmds.textFieldButtonGrp("mmListMessages", cal=(1, "left"), cw3=(75,200,75), label="baseObject", w=400, bl="choose object", bc=partial(zbw_mmAddBase,"mmListMessages", "noClear"))
-    cmds.separator(h=20, st="double")
-    #button to create list of message attrs
-    cmds.button(w=200, l="list all message attr for base", bgc = (0,.5,0), c=partial(zbw_mmListCurrentMessages, "mmListMessages"))
-    cmds.separator(h=20, st="double")
-    cmds.text("rt-click on the attr or object to change the connection")
-    cmds.separator(h=20, st="double")
-
-    cmds.rowColumnLayout("mmRCTextLayout", w=600, nc=3, cw=[(1, 200),(2,290),(3,100)])
-    cmds.text("ATTR")
-    cmds.text("OBJECT")
-    cmds.text("DELETE")
-
-    cmds.showWindow(window)
-
-def zbw_mmAddMObjs(*args):
+def get_main_window():
     """
-    adds textFields to the UI for adding target objects for the message attrs
+    get qt main from maya
     """
-    #delete text confirm dialogue if it exists
-    zbw_mmDeleteConfirm()
-    #figure out what objects are already parented
-    children = cmds.rowColumnLayout("mmRCLayout" , q=True, ca=True)
-    #figure out where stuff goes (2 column layout, so divide by 2), 1 based
-    if children:
-        currentNum = len(children)/2 + 1
-        currentTFG = "attr" + str(currentNum)
-        currentTFBG = "obj" + str(currentNum)
-    #if no objects exist . . .
-    else:
-        currentTFG = "attr1"
-        currentTFBG = "obj1"
-
-    cmds.textFieldGrp(currentTFG, l="addedAttr (ln)", cal=(1, "left"), cw2=(100, 150), p="mmRCLayout")
-    cmds.textFieldButtonGrp(currentTFBG, l="messageObj", cal=(1, "left"), cw3=(75,150,50), p="mmRCLayout", bl="get", bc=partial(zbw_mmAddTarget, currentTFBG))
+    main_win_ptr = omui.MQtUtil.mainWindow()
+    return wrapInstance(int(main_win_ptr), QtWidgets.QWidget)
 
 
-#proc to grab the attrs and create connections
-def zbw_mmConnectM(*args):
-    """
-    uses the items from the textFields to create message attrs in the base obj, and connects to those the objs from the rightmost fields of the UI
-    """
-    #check there's a base obj
-    if (cmds.textFieldButtonGrp("zbw_tfbg_baseObj", q=True, tx=True)):
-        #check there are any fields created
-        if (cmds.rowColumnLayout("mmRCLayout", q=True, ca=True)):
+class MessageAttributesUI(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent=parent)
+        if not parent:
+            self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
-            children = cmds.rowColumnLayout("mmRCLayout", q=True, ca=True)
-            numObj = (len(children)/2)
+        self.setWindowTitle("Message Attribute Manager")
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(400)
+        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
-            if numObj:
-                for num in range(1, numObj+1):
-                    attrTFG =  "attr" + str(num)
-                    objTFBG = "obj" + str(num)
-                    baseObj = cmds.textFieldButtonGrp("zbw_tfbg_baseObj", q=True, tx=True)
-                    targetObj = cmds.textFieldButtonGrp(objTFBG, q=True, tx=True)
-                    baseAttr = cmds.textFieldGrp(attrTFG, q=True, tx=True)
-                    baseMAttr = baseObj + "." + baseAttr
-                    objMAttr = targetObj + ".message"
-                    #check to make sure there's something in each field, otherwise skip
-                    if baseAttr and targetObj:
-                        #check that attr doesnt' already exist with connection
-                        if (cmds.attributeQuery(baseAttr, n=baseObj, ex=True)):
-                            #delete the attr that exists, print note about it
-                            cmds.deleteAttr(baseMAttr)
-                            cmds.warning(baseMAttr + " already exists! Deleting for overwrite and reconnection")
-                        cmds.addAttr(baseObj, at="message", ln=baseAttr)
-                        cmds.connectAttr(objMAttr, baseMAttr, f=True)
-                        #print confirmation of connection
-                        print(("Connected: "+ objMAttr +"--->"+ baseMAttr))
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
 
-                    else:
-                        cmds.warning("Line # " + str(num) + " was empty! Skipped that attr")
-                #leave a text field saying that it's done
-                zbw_mmDeleteConfirm()
-                cmds.separator("mmConfirmSep", h=20, st="single", p="mmAddNewConnections")
-                cmds.text("mmTextConfirm", l="MESSAGES MAPPED!", p="mmAddNewConnections")
-        else:
-            cmds.warning("Please create some attrs and objs to connect to base obj!")
-    else:
-        cmds.warning("Please choose a base object to add attrs to!")
+        self.show()
 
-def zbw_mmDeleteConfirm():
-    if (cmds.text("mmTextConfirm", q=True, ex=True)):
-        cmds.deleteUI("mmTextConfirm")
-        cmds.deleteUI("mmConfirmSep")
+    def create_widgets(self):
+        self.base_tx = QtWidgets.QLabel("Base Object: ")
+        self.base_le = QtWidgets.QLineEdit()
+        self.base_le.setMinimumWidth(250)
+        self.base_but = QtWidgets.QPushButton("<-- SET  ")
+        self.base_but.setStyleSheet("background-color:rgb(70, 100, 70)")
+        self.base_but.setFixedWidth(50)
+        self.base_sel_but = QtWidgets.QPushButton("SELECT")
+        self.base_sel_but.setFixedWidth(60)
 
-def zbw_mmAddBase(tfbg,*args):
-    """
-    uses the selected item to add the full path in to the textField of the UI base obj
-    """
-    #check that selection is only one object
-    sel = cmds.ls(sl=True, l=True, tr=True)
-    if len(sel) == 1:
-        baseObj = sel[0]
-        cmds.textFieldButtonGrp(tfbg, e=True, tx=baseObj)
-        #delete the text about "Messages mapped" if it exists (and you're coming from the first tab)
-        if (args[0]=="clear"):
-            zbw_mmDeleteConfirm()
-    else:
-        cmds.error("please select one tranform object to be the base to add message attrs to")
+        self.message_list = QtWidgets.QListWidget()
+        self.message_list.setMinimumWidth(590)
+        self.message_list.setMinimumHeight(300)
+        self.message_list.setStyleSheet("background-color:black")
 
-def zbw_mmAddTarget(currentTFBG, *args):
-    """
-    uses the selected item to add full path into the textField of the UI target obj
-    """
-    #check selection is one object
-    sel = cmds.ls(sl=True, l=True)
-    if len(sel) == 1:
-        targetObj = sel[0]
-        #add selected to textField
-        cmds.textFieldButtonGrp(currentTFBG, e=True, tx=targetObj)
-    else:
-        cmds.error("please select one object to send out message attr")
+        self.reset_but = QtWidgets.QPushButton("Reset")
+        self.create_but = QtWidgets.QPushButton("Create New Attr")
 
-def zbw_mmDeleteLast(*args):
-    """
-    deletes the last pair of attr, obj text fields in the UI
-    """
-    children = cmds.rowColumnLayout("mmRCLayout" , q=True, ca=True)
+    def create_layouts(self):
+        top_groupbox = QtWidgets.QGroupBox()
+        # top_groupbox.setStyleSheet("background-color:black; border:none")
+        top_groupbox_layout = QtWidgets.QHBoxLayout()
+        top_groupbox.setLayout(top_groupbox_layout)
+        top_groupbox_layout.addWidget(self.base_tx)
+        top_groupbox_layout.addWidget(self.base_le)
+        top_groupbox_layout.addWidget(self.base_but)
+        top_groupbox_layout.addWidget(self.base_sel_but)
 
-    if children:
-        numChildren = len(children)
-        lastTFG = "attr" + str(numChildren/2)
-        lastTFBG = "obj" + str(numChildren/2)
-        cmds.deleteUI(lastTFG)
-        cmds.deleteUI(lastTFBG)
+        list_layout = QtWidgets.QVBoxLayout()
+        list_layout.addWidget(self.message_list)
 
-    else:
+        low_horiz_layout = QtWidgets.QHBoxLayout()
+        low_horiz_layout.addWidget(self.create_but)
+        low_horiz_layout.addStretch()
+        low_horiz_layout.addWidget(self.reset_but)
+
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.addWidget(top_groupbox)
+        main_layout.addLayout(list_layout)
+        main_layout.addLayout(low_horiz_layout)
+
+    def create_connections(self):
+        self.base_but.clicked.connect(self.set_base_obj)
+        self.create_but.clicked.connect(self.create_new_attr_name)
+        self.base_sel_but.clicked.connect(self.select_base)
+        self.reset_but.clicked.connect(self.reset_ui)
+
+    def set_base_obj(self):
+        sel = mc.ls(sl=True, long=True)
+        if len(sel) != 1:
+            mc.warning("You need to select ONE object in scene as the base object to look at!")
+            return()
+        obj = sel[0]
+        self.reset_ui()
+        self.base_le.clear()
+        self.base_le.setText(obj)
+        self.process_base_object()
+
+    def process_base_object(self):
+        base_obj = self.base_le.text()
+        attrs = self.list_message_attributes(base_obj)
+        for attr in attrs:
+            value = ""
+            conns = mc.listConnections("{0}.{1}".format(base_obj, attr), d=False, s=True)
+            if conns:
+                value = conns[0]
+            self.create_attr_widget(attr, attr_value=value)
+
+    def select_base(self):
+        if self.base_le.text() and mc.objExists(self.base_le.text()):
+            mc.select(self.base_le.text(), replace=True, noExpand=True)
+
+    def list_message_attributes(self, obj):
+        exclude = ["message", "hyperLayout", "borderConnections", "ghostDriver", "partition", "groupNodes", "usedBy"]
+        attrs = [x for x in mc.listAttr(obj) if "." not in x and x not in exclude]
+        msg_attrs = [x for x in attrs if mc.attributeQuery(x, node=obj, message=True)]
+        return(msg_attrs)
+
+    def create_new_attr_name(self):
+        """popup to create new name, then sends to create_widget"""
+        if not self.base_le.text():
+            mc.warning("You need have a base object chosen!")
+            return()
+        attr_name, done = QtWidgets.QInputDialog.getText(self, "New Message Attr Name", "Enter New Message Attr Name:")
+        # validate attr name?
+        if done:
+            self.create_message_attribute(attr_name)
+            self.create_attr_widget(attr_name)
+
+    def create_message_attribute(self, attr_name):
+        """makes a new message attr named attr_name on self.base_obj"""
+        if not self.base_le.text():
+            mc.warning("You need to have a base object in the ui!")
+            return()
+        try:
+            mc.addAttr(self.base_le.text(), ln=attr_name, at="message")
+        except:
+            mc.warning("Couldn't add the attr: ", attr_name)
+
+    def create_attr_widget(self, attr_name, attr_value=""):
+        base_obj = self.base_le.text()
+        if not mc.objExists(base_obj):
+            return()
+        message_widget = MessageAttributeWidget(self, base_obj, attr_name, attr_value)
+        item = QtWidgets.QListWidgetItem(self.message_list)
+        item.setSizeHint(message_widget.sizeHint())
+        self.message_list.addItem(item)
+        self.message_list.setItemWidget(item, message_widget)
+
+        num = self.message_list.count()
+        if num > 0:
+            num = num - 1
+        self.message_list.setCurrentRow(num)
+
+    def get_all_widgets(self):
+        widgets = []
+        for x in range(self.message_list.count()):
+            item = self.message_list.item(x)
+            widget = self.message_list.itemWidget(item)
+            widgets.append(widget)
+        return(widgets)
+
+    def delete_widget(self, widget):
+        """deletes item, widget and attribute"""
+        self.select_item_from_widget(widget)
+        item = self.message_list.currentItem()
+        self.message_list.takeItem(self.message_list.row(item))
+        widget.deleteLater()
+
+        try:
+            mc.deleteAttr(f"{self.base_le.text()}.{widget.attr_name}")
+        except:
+            pass
+
+    def select_item_from_widget(self, my_widget):
+        """selects the list item that contains the given widget"""
+        for x in range(self.message_list.count()):
+            item = self.message_list.item(x)
+            widget = self.message_list.itemWidget(item)
+            if widget == my_widget:
+                self.message_list.setCurrentItem(item)
+                return()
+
+    def reset_ui(self):
+        self.base_le.clear()
+        widgets = self.get_all_widgets()
+        if widgets == [None]:
+            widgets = []
+        for widget in widgets:
+            widget.deleteLater()
+        self.message_list.clear()
+
+
+class MessageAttributeWidget(QtWidgets.QWidget):
+    def __init__(self, parent, base_obj, attr_name, attr_value=None):
+        """widget for each message attr"""
+        super(MessageAttributeWidget, self).__init__(parent=None)
+        self.main_ui = parent
+        self.attr_name = attr_name
+        self.attr_value = attr_value
+        self.base_obj = base_obj
+        self.full_attr = self.base_obj + "." + self.attr_name
+
+        self.create_widgets()
+        self.create_layouts()
+        self.create_connections()
+
+        self.fill_value(value=self.attr_value)
+
+    def create_widgets(self):
+        self.base_widget = QtWidgets.QWidget()
+        self.base_widget.setMinimumWidth(580)
+        self.base_widget.setFixedHeight(40)
+        self.base_widget.setStyleSheet("background-color:rgb(30, 30, 30); border:none")
+
+        self.attr_tx = QtWidgets.QLabel(f".{self.attr_name} ")
+        self.attr_tx.setFixedWidth(135)
+        self.attr_le = QtWidgets.QLineEdit()
+        self.attr_le.setReadOnly(True)
+        self.attr_le.setMinimumWidth(200)
+        self.attr_le.setStyleSheet("background-color:rgb(10, 10, 10)")
+
+        self.set_but = QtWidgets.QPushButton("<-- SET  ")
+        self.set_but.setStyleSheet("background-color:rgb(70, 100, 70)")
+        self.set_but.setFixedWidth(60)
+        self.clr_but = QtWidgets.QPushButton("DISCONN.")
+        self.clr_but.setStyleSheet("background-color:rgb(70, 70, 70)")
+        self.clr_but.setFixedWidth(70)
+        self.del_but = QtWidgets.QPushButton("DELETE")
+        self.del_but.setStyleSheet("background-color:rgb(175, 70, 70)")
+        self.del_but.setFixedWidth(50)
+
+    def create_layouts(self):
+        main_layout = QtWidgets.QVBoxLayout()
+        main_layout.addWidget(self.base_widget)
+        main_layout.setContentsMargins(2, 2, 2, 2)
+
+        base_layout = QtWidgets.QHBoxLayout()
+        self.base_widget.setLayout(base_layout)
+        base_layout.addWidget(self.attr_tx)
+        base_layout.addWidget(self.attr_le)
+        base_layout.addWidget(self.set_but)
+        base_layout.addWidget(self.clr_but)
+        base_layout.addWidget(self.del_but)
+
+        self.setLayout(main_layout)
+
+    def create_connections(self):
+        self.set_but.clicked.connect(self.get_and_set_attr)
+        self.clr_but.clicked.connect(self.clear_attr)
+        self.del_but.clicked.connect(self.delete_me)
+
+    def clear_attr(self):
+        self.main_ui.select_item_from_widget(self)
+        if not self.attr_le.text():
+            return()
+        mc.disconnectAttr(f"{self.attr_le.text()}.message", f"{self.base_obj}.{self.attr_name}")
+        self.attr_le.clear()
+
+    def get_and_set_attr(self):
+        self.main_ui.select_item_from_widget(self)
+        sel = mc.ls(sl=True, long=True)
+        if len(sel) != 1:
+            mc.warning("You need to select only ONE object to go into the message attr!")
+            return()
+        obj = sel[0]
+
+        self.fill_value(obj)
+        try:
+            mc.connectAttr(f"{obj}.message", f"{self.base_obj}.{self.attr_name}", force=True)
+        except:
+            mc.warning("Had a problem trying to connect ")
+            pass
+
+    def fill_value(self, value=""):
+        self.attr_le.clear()
+        if value:
+            self.attr_le.setText(value)
+            self.attr_value = value
+
+    def delete_me(self):
+        self.main_ui.delete_widget(self)
+
+
+def launch_ui():
+    global messageWin
+    try:
+        messageWin.close()
+        messageWin.deleteLater()
+    except:
         pass
 
-def zbw_mmListCurrentMessages(tfbg, *args):
-    """
-    lists the message attrs in the base obj and sets up rt-click menus to change them and a button to delete them
-    """
-    if (cmds.rowColumnLayout("mmRCListLayout", q=True, ex=True)):
-        cmds.deleteUI("mmRCListLayout")
-    cmds.rowColumnLayout("mmRCListLayout", w=600, nc=3, cw=[(1, 250),(2,250),(3,100)],p="existingMessages")
-    #get the base object
-    baseObj = cmds.textFieldButtonGrp(tfbg, q=True, tx=True)
-    #find all attr of type message for base obj
-    userAttrs = cmds.listAttr(baseObj, ud=True)
-    #print(udAttrs)
-    messageAttrs = []
-    messageObjs = []
-    if userAttrs:
-        for attr in userAttrs:
-            isMsg = cmds.attributeQuery(attr, n=baseObj, msg=True)
-            if isMsg:
-                fullMsgAttr = baseObj + "." + attr
-                messageAttrs.append(fullMsgAttr)
-                targetObj = cmds.listConnections(fullMsgAttr)
-                if not targetObj:
-                    targetObj = ["no Connection"]
-                messageObjs.append(targetObj[0])
-
-        sizeMsgs = len(messageObjs)
-        for i in range(0, sizeMsgs):
-            thisObj = messageObjs[i]
-            thisAttr = messageAttrs[i]
-
-            #create textField based on num already there, non-editable
-            attrId = "listAttrTFG" + str(i)
-            objId = "listObjTFG" + str(i)
-            buttonId = "listButton" + str(i)
-
-            cmds.separator(h=15, style="single")
-            cmds.separator(h=15, style="single")
-            cmds.separator(h=15, style="single")
-
-            #create text field for attr
-            cmds.textFieldGrp(attrId, p="mmRCListLayout", l=i, cw=[(1,10), (2,190)], ed=False, tx=thisAttr)
-            #create popup for text field
-            cmds.popupMenu(("attrPUM"+str(i)), b=3)
-            cmds.menuItem(l="change attr name", p=("attrPUM"+str(i)), c=partial(zbw_mmChangeConnectAttrUI, baseObj, thisAttr, thisObj))
-
-            #create textField obj based on num, non-editable
-            cmds.textFieldGrp(objId, p="mmRCListLayout", w=200, ed=False, tx=thisObj)
-            #create pop up
-            cmds.popupMenu(("objPUM"+str(i)), b=3)
-            cmds.menuItem(l="change obj", p=("objPUM"+str(i)), c=partial(zbw_mmChangeConnectObjUI, baseObj, thisAttr, thisObj))
-
-            #create button to delete attr
-            cmds.button(buttonId, l="delete", w=50, c=partial(zbw_mmDeleteMsgAttr, thisAttr))
-    else:
-        cmds.text("no message attributes on this object", p="mmRCListLayout")
-
-def zbw_mmDeleteMsgAttr(attr, *args):
-    #delete the attr from the base obj
-    cmds.deleteAttr(attr)
-    #when you delete, then run the whole proc again afterwards (to clean up the nums)
-    cmds.deleteUI("mmRCListLayout")
-    zbw_mmListCurrentMessages("mmListMessages")
-
-def zbw_mmChangeConnectAttrUI(base, attr, obj, *args):
-    if (cmds.window('zbw_mmChangeAttrUI', exists=True)):
-        cmds.deleteUI('zbw_mmChangeAttrUI', window=True)
-        cmds.windowPref('zbw_mmChangeAttrUI', remove=True)
-    window=cmds.window('zbw_mmChangeAttrUI', widthHeight=(400,80), title='zbw_messageMapper_changeAttrName')
-    cmds.columnLayout()
-    #show old attr name
-    cmds.text("old attribute name: " + attr)
-    #asks for the new attr name
-    cmds.textFieldGrp("zbw_mmChangeAttrTFG", l="new attr name (just attr name)")
-    #button to do it (pass along attr, obj)
-    cmds.button("zbw_mmChangeAttrB", l="change attr!", c=partial(zbw_mmChangeConnectAttr, base, attr, obj))
-    cmds.showWindow(window)
-    #force window to size
-    cmds.window('zbw_mmChangeAttrUI', e=True, widthHeight = (400,80))
-    pass
-
-def zbw_mmChangeConnectAttr(base, attr, obj, *args):
-    #get that from the text field
-    newAttr = cmds.textFieldGrp("zbw_mmChangeAttrTFG", q=True, tx=True)
-    #delete old attr
-    cmds.deleteAttr(attr)
-    #create new attr
-    cmds.addAttr(base, at="message", ln=newAttr)
-    #create connection to obj in new attr
-    cmds.connectAttr((obj+".message"), (base+"."+newAttr), f=True)
-
-    #when you delete, then run the whole proc again afterwards (to clean up the nums)
-    cmds.deleteUI('zbw_mmChangeAttrUI', window=True)
-    cmds.windowPref('zbw_mmChangeAttrUI', remove=True)
-    cmds.deleteUI("mmRCListLayout")
-    zbw_mmListCurrentMessages("mmListMessages")
-
-def zbw_mmChangeConnectObjUI(base, attr, obj, *args):
-    if (cmds.window('zbw_mmChangeObjUI', exists=True)):
-        cmds.deleteUI('zbw_mmChangeObjUI', window=True)
-        cmds.windowPref('zbw_mmChangeObjUI', remove=True)
-    window=cmds.window('zbw_mmChangeObjUI', widthHeight=(400,85), title='zbw_messageMapper_changeObjName')
-    cmds.columnLayout()
-    #show old attr name
-    cmds.text("base attribute name: " + attr)
-    cmds.text("old connected obj name: " + obj)
-    #asks for the new attr name
-    cmds.textFieldButtonGrp("zbw_mmChangeObjTFBG", l="select new obj: ", bl="get", bc=partial(zbw_mmAddTarget, "zbw_mmChangeObjTFBG"))
-    #button to do it (pass along attr, obj)
-    cmds.button("zbw_mmChangeObjB", l="change obj!", c=partial(zbw_mmChangeConnectObj, base, attr, obj))
-    cmds.showWindow(window)
-    #force window to size
-    cmds.window('zbw_mmChangeObjUI', e=True, widthHeight = (420,85))
-
-def zbw_mmChangeConnectObj(base, attr, obj, *args):
-    #get that from the text field
-    newObj = cmds.textFieldGrp("zbw_mmChangeObjTFBG", q=True, tx=True)
-    #create connection to obj in new attr
-    cmds.connectAttr((newObj+".message"), attr, f=True)
-
-    #delete this window, delete mmRCListLayout and call the list again
-    cmds.deleteUI('zbw_mmChangeObjUI', window=True)
-    cmds.windowPref('zbw_mmChangeObjUI', remove=True)
-    cmds.deleteUI("mmRCListLayout")
-    zbw_mmListCurrentMessages("mmListMessages")
-
-def messageMapper():
-    """use this to start the script!"""
-
-    zbw_mmUI()
+    main = get_main_window()
+    messageWin = MessageAttributesUI(main)

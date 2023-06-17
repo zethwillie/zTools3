@@ -1439,6 +1439,7 @@ def freeze_and_connect(*args):
 
         rig.snap_to(sel[x], grp)
         cmds.parentConstraint(ctrl, sel[x])
+        cmds.scaleConstraint(ctrl, sel[x])
         grpList.append(grp)
         ctrlList.append(ctrl)
 

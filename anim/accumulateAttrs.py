@@ -4,7 +4,7 @@
 # creator: Zeth Willie
 # Contact: zethwillie@gmail.com, catbuks.com, williework.blogspot.com
 # Description: for selection in order, adds successively larger values to selection list
-# To Run: type "import zTools.accumulateAttrs as accumulateAttrs; reload(accumulateAttrs);accumulateAttrs.accumulateAttrs()"
+# To Run: type "import zTools3.anim.accumulateAttrs as accattr;accattr.accumulateAttrs()"
 ########################
 
 # todo check ordered selections

@@ -3,8 +3,8 @@
 
 import maya.cmds as cmds
 import maya.mel as mel
-import zTools.resources.zbw_math as mth
-import zTools.zbw_rig as rig
+import zTools3.resources.zbw_math as mth
+import zTools3.zbw_rig as rig
 
 
 # name rig, num jnts

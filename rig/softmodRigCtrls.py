@@ -1,5 +1,5 @@
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 
 
 def softmodRigCtrls():
@@ -17,9 +17,9 @@ def softmodRigCtrls():
         origScale = cmds.getAttr(mover + ".s")[0]
 
         # create new ctrls
-        newBase = rig.create_control(name=base+"_CTRL", type="cross", axis="z", color="yellow")
+        newBase = rig.create_control(name=base + "_CTRL", type="cross", axis="z", color="yellow")
         newBaseGrp = rig.group_freeze(newBase)
-        newMover = rig.create_control(name=mover+"_CTRL", type="sphere", axis="z", color="red")
+        newMover = rig.create_control(name=mover + "_CTRL", type="sphere", axis="z", color="red")
         newMoverGrp = rig.group_freeze(newMover)
         cmds.parent(newMoverGrp, newBase)
 
@@ -32,15 +32,14 @@ def softmodRigCtrls():
         rig.scale_nurbs_control(newMover, .05, .05, .05)
 
         cmds.addAttr(newMover, ln="__xtra__", nn="__xtra__", at="enum", en="-----", k=True)
-        cmds.setAttr(newMover+".__xtra__", l=True)
+        cmds.setAttr(newMover + ".__xtra__", l=True)
         cmds.addAttr(newMover, ln="falloff", at="float", min=0, dv=origFalloff, k=True)
         cmds.addAttr(newMover, ln="showBaseCtrl", at="short", min=0, max=1, dv=0, k=True)
-        
-        cmds.connectAttr(newMover+".showBaseCtrl", cmds.listRelatives(newBase, s=True)[0] + ".v")
-        cmds.connectAttr(newMover+".falloff", mover+".falloffRadius")
-        
+
+        cmds.connectAttr(newMover + ".showBaseCtrl", cmds.listRelatives(newBase, s=True)[0] + ".v")
+        cmds.connectAttr(newMover + ".falloff", mover + ".falloffRadius")
+
         attrs = [".t", ".r", ".s"]
         for attr in attrs:
             cmds.connectAttr(newMover + attr, mover + attr)
             cmds.connectAttr(newBase + attr, base + attr)
-    

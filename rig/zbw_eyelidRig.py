@@ -3,9 +3,8 @@ import maya.OpenMaya as om
 
 from functools import partial
 
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
-importlib.reload(rig)
 
 
 class EyelidRigUI(object):
@@ -28,20 +27,20 @@ class EyelidRigUI(object):
         self.tab = cmds.tabLayout()
         cmds.columnLayout("Eyelid_Rig")
 
-        self.name = cmds.textFieldGrp(l="Rig Name: ", cw=[(1, 100), (2, 180)], cal=[(1, "left"),(2, "left")], tx="lf_eyelid")
-        self.colorRBG = cmds.radioButtonGrp(l="Color :", l1="Red", l2="Blue", l3="Green", nrb=3, cw4=[100, 50,50, 50], cl4=["left", "left", "left", "left"], sl=2)
-        self.centerObj = cmds.textFieldButtonGrp(l="Center Object: ", cw=[(1, 100), (2, 160),(3, 30)], cal=[(1, "left"),(2, "left"),(3, "left")], bl=">>>", bc=partial(self.get_object, "center"))
-        self.upObj = cmds.textFieldButtonGrp(l="Up Object: ", cw=[(1, 100), (2, 160),(3, 30)], cal=[(1, "left"),(2, "left"),(3, "left")], bl=">>>", bc=partial(self.get_object, "up"))
-        cmds.separator(h=10)
- 
-        self.topCrv = cmds.textFieldButtonGrp(l="Top Curve: ", cw=[(1, 100), (2, 160),(3, 30)], cal=[(1, "left"),(2, "left"),(3, "left")], bl=">>>", bc=partial(self.get_curves, "top"))
-        self.botCrv = cmds.textFieldButtonGrp(l="Bot Curve: ", cw=[(1, 100), (2, 160),(3, 30)], cal=[(1, "left"),(2, "left"),(3, "left")], bl=">>>", bc=partial(self.get_curves, "bot"))
-        cmds.separator(h=10)
- 
-        self.numCtrlIFG = cmds.intFieldGrp(l="Number of Ctrls: ", v1=5, cw=[(1, 100), (2, 180)], cal=[(1, "left"),(2, "left")], en=False)
+        self.name = cmds.textFieldGrp(l="Rig Name: ", cw=[(1, 100), (2, 180)], cal=[(1, "left"), (2, "left")], tx="lf_eyelid")
+        self.colorRBG = cmds.radioButtonGrp(l="Color :", l1="Red", l2="Blue", l3="Green", nrb=3, cw4=[100, 50, 50, 50], cl4=["left", "left", "left", "left"], sl=2)
+        self.centerObj = cmds.textFieldButtonGrp(l="Center Object: ", cw=[(1, 100), (2, 160), (3, 30)], cal=[(1, "left"), (2, "left"), (3, "left")], bl=">>>", bc=partial(self.get_object, "center"))
+        self.upObj = cmds.textFieldButtonGrp(l="Up Object: ", cw=[(1, 100), (2, 160), (3, 30)], cal=[(1, "left"), (2, "left"), (3, "left")], bl=">>>", bc=partial(self.get_object, "up"))
         cmds.separator(h=10)
 
-        self.blendCBG = cmds.checkBoxGrp(l="Group for Blend Shape: ", ncb=1, v1=1, cw=[(1, 140), (2, 180)], cal=[(1, "left"),(2, "left")])
+        self.topCrv = cmds.textFieldButtonGrp(l="Top Curve: ", cw=[(1, 100), (2, 160), (3, 30)], cal=[(1, "left"), (2, "left"), (3, "left")], bl=">>>", bc=partial(self.get_curves, "top"))
+        self.botCrv = cmds.textFieldButtonGrp(l="Bot Curve: ", cw=[(1, 100), (2, 160), (3, 30)], cal=[(1, "left"), (2, "left"), (3, "left")], bl=">>>", bc=partial(self.get_curves, "bot"))
+        cmds.separator(h=10)
+
+        self.numCtrlIFG = cmds.intFieldGrp(l="Number of Ctrls: ", v1=5, cw=[(1, 100), (2, 180)], cal=[(1, "left"), (2, "left")], en=False)
+        cmds.separator(h=10)
+
+        self.blendCBG = cmds.checkBoxGrp(l="Group for Blend Shape: ", ncb=1, v1=1, cw=[(1, 140), (2, 180)], cal=[(1, "left"), (2, "left")])
         cmds.separator(h=10)
 
         self.createBut = cmds.button(l="Create eye lid rig!", w=290, h=50, bgc=(.5, .7, .5), c=self.gather_info_and_run)
@@ -58,7 +57,6 @@ class EyelidRigUI(object):
 
         cmds.showWindow(self.win)
         cmds.showWindow(self.win, e=True, w=5, h=5, rtf=True)
-
 
     def gather_info_and_run(self, *args):
         name = cmds.textFieldGrp(self.name, q=True, tx=True)
@@ -85,11 +83,10 @@ class EyelidRigUI(object):
                 return()
 
         confirm = self.test_curves(topCrv, botCrv)
-        if confirm=="No":
+        if confirm == "No":
             return()
 
         eyerig = EyelidRigBuild(name=name, cnt=cnt, up=up, num=num, topCrv=topCrv, botCrv=botCrv, blend=blend, color=color)
-
 
     def test_curves(self, topCrv, botCrv, dialog=True):
         # give two curves
@@ -100,15 +97,14 @@ class EyelidRigUI(object):
         match2 = rig.is_close(a[2], b[2])
         if dialog:
             if not (match0 and match1 and match2):
-                confirm = cmds.confirmDialog( title='Confirm', message="Your two curves don't have identical start points.\nContinue?", button=['Yes','No'], defaultButton='Yes', cancelButton='No', dismissString='No' )
+                confirm = cmds.confirmDialog(title='Confirm', message="Your two curves don't have identical start points.\nContinue?", button=['Yes', 'No'], defaultButton='Yes', cancelButton='No', dismissString='No')
                 return(confirm)
             return("Yes")
         else:
             return((match0 and match1 and match2))
 
-
     def reverse_curve(self, *args):
-        sel = cmds.ls(sl=True, exactType = "transform")
+        sel = cmds.ls(sl=True, exactType="transform")
 
         check = False
         if sel:
@@ -125,10 +121,8 @@ class EyelidRigUI(object):
 
         cmds.select(sel, r=True)
 
-
     def create_curve_from_edge(self, *args):
         cmds.polyToCurve(ch=False, degree=1, form=2, conformToSmoothMeshPreview=True)
-
 
     def duplicate_and_mirror_curves(self, *args):
         sel = cmds.ls(sl=True, type="transform")
@@ -148,7 +142,7 @@ class EyelidRigUI(object):
             grp = cmds.duplicate(origGrp, renameChildren=True)
             newGrp = grp[0]
             newObj = grp[1]
-            cmds.setAttr(newGrp+".sx", -1.0)
+            cmds.setAttr(newGrp + ".sx", -1.0)
             # reparent orig to par
             if par:
                 cmds.parent(x, par)
@@ -160,7 +154,6 @@ class EyelidRigUI(object):
             cmds.parent(newObj, w=True)
             cmds.delete(newGrp)
             cmds.select(sel, r=True)
-
 
     def test_selection_match(self, *args):
         sel = cmds.ls(sl=True, exactType="transform")
@@ -185,12 +178,12 @@ class EyelidRigUI(object):
 
     def get_curves(self, field):
         if field == "top":
-            ui=self.topCrv
+            ui = self.topCrv
         if field == "bot":
-            ui=self.botCrv
+            ui = self.botCrv
 
         sel = cmds.ls(sl=True, type="transform")
-        if (not sel) or (len(sel)>1):
+        if (not sel) or (len(sel) > 1):
             cmds.warning("You need to select one obj")
             return()
         obj = sel[0]
@@ -198,18 +191,17 @@ class EyelidRigUI(object):
         if cmds.objectType(shp) != "nurbsCurve":
             cmds.warning("This object isn't a nurbsCurve.")
             return()
-        
-        cmds.textFieldButtonGrp(ui, e=True, tx=obj)
 
+        cmds.textFieldButtonGrp(ui, e=True, tx=obj)
 
     def get_object(self, field):
         if field == "center":
-            ui=self.centerObj
+            ui = self.centerObj
         if field == "up":
-            ui=self.upObj
+            ui = self.upObj
 
         sel = cmds.ls(sl=True, type="transform")
-        if (not sel) or (len(sel)>1):
+        if (not sel) or (len(sel) > 1):
             cmds.warning("You need to select one obj")
             return()
 
@@ -245,7 +237,7 @@ class EyelidRigBuild(object):
         self.blinkCrvGrp = cmds.group(empty=True, n="{0}_blink_crv_GRP".format(self.name))
         self.center_pivot([self.blinkCrvGrp])
 
-        self.eyeRig = {"top":{}, "bot":{}}
+        self.eyeRig = {"top": {}, "bot": {}}
         for side in self.sides:
             self.eyeRig[side]["crvList"] = []
             self.eyeRig[side]["crvGrp"] = cmds.group(empty=True, n="{0}_{1}_CRV_GRP".format(self.name, side))
@@ -276,9 +268,8 @@ class EyelidRigBuild(object):
 
         self.eyeRig["top"]["crvList"].append(self.topHiresCrv)
         self.eyeRig["bot"]["crvList"].append(self.botHiresCrv)
-        
-        self.create_rig()
 
+        self.create_rig()
 
     def create_rig(self):
         for side in list(self.eyeRig.keys()):
@@ -292,12 +283,10 @@ class EyelidRigBuild(object):
         self.smart_blink_setup()
         self.clean_up_rig()
 
-
     def center_pivot(self, clist):
         for obj in clist:
             cmds.xform(obj, ws=True, rp=self.centerPos)
             cmds.xform(obj, ws=True, sp=self.centerPos)
-
 
     def create_locs_joints_at_curve(self, side=None):
 
@@ -322,7 +311,7 @@ class EyelidRigBuild(object):
             cmds.parent(baseJnt, self.eyeRig[side]["bindJntGrp"])
             cmds.parent(loc, self.eyeRig[side]["locGrp"])
 
-            ac = cmds.aimConstraint(loc, baseJnt, mo=False, wuo=self.up, wut="object", aim=(1,0,0), u=(0,1,0))
+            ac = cmds.aimConstraint(loc, baseJnt, mo=False, wuo=self.up, wut="object", aim=(1, 0, 0), u=(0, 1, 0))
 
         # put controls on indiv joints for fine ctrl, create proxy for these? we have groups for these.
 
@@ -338,17 +327,16 @@ class EyelidRigBuild(object):
         jntPos = om.MVector(jPos[0], jPos[1], jPos[2])
 
         vec = jntPos - parPos
-        newPos = jntPos + (vec*.25)
+        newPos = jntPos + (vec * .25)
         cmds.select(cl=True)
         tmpEndJoint = cmds.joint(name="{0}_temp".format(endObj), p=newPos)
         cmds.parent(tmpEndJoint, endObj)
         return(tmpEndJoint)
 
-
     def create_control_joints(self, side=None):
         crv = self.eyeRig[side]["crvList"][0]
         ctrlCrvName = crv.replace("_hi_", "_ctrl_")
-        ctrlCrv = rig.rebuild_curve(curve=crv, num=self.numCtrl-1, name=ctrlCrvName, keep=True, ch=False)
+        ctrlCrv = rig.rebuild_curve(curve=crv, num=self.numCtrl - 1, name=ctrlCrvName, keep=True, ch=False)
         self.eyeRig[side]["crvList"].append(ctrlCrv)
 
         ctrlEps = cmds.ls("{0}.ep[*]".format(ctrlCrv), fl=True)
@@ -366,7 +354,6 @@ class EyelidRigBuild(object):
             cmds.parent(jntGrp, self.eyeRig[side]["ctrlJntGrps"])
             self.eyeRig[side]["ctrlJntList"].append(jnt)
 
-
     def create_control_wire_deformer(self, side):
         wireNode = cmds.wire(self.eyeRig[side]["crvList"][0], envelope=1, groupWithBase=False, crossingEffect=0, localInfluence=0, wire=self.eyeRig[side]["crvList"][1], name="{0}_{1}_ctrl_WIRE".format(self.name, side))[0]
         wireBase = self.get_base_wire(wireNode)
@@ -376,29 +363,25 @@ class EyelidRigBuild(object):
         cmds.parent(self.eyeRig[side]["crvList"][1], self.eyeRig[side]["crvGrp"])
         cmds.parent(wireBase, self.eyeRig[side]["crvGrp"])
 
-
     def bind_control_curve(self, side):
         skinCluster = self.bind_crv_to_joints(self.eyeRig[side]["crvList"][1], self.eyeRig[side]["ctrlJntList"])
-
 
     def create_and_connect_ctrls(self, side):
         # create ctrls
         sideGrps = self.create_ctrls_for_joints(side)
         sideProxies = self.connect_ctrl_via_proxies(side)
 
-
     def bind_crv_to_joints(self, crv, jntList):
         skinCluster = cmds.skinCluster(jntList, crv, maximumInfluences=3, dropoffRate=4, skinMethod=0, normalizeWeights=2)
         return(skinCluster)
 
     def get_base_wire(self, wireDef):
-        shp = cmds.listConnections(wireDef+".baseWire[0]", p=True, s=True)[0].split(".")[0]
+        shp = cmds.listConnections(wireDef + ".baseWire[0]", p=True, s=True)[0].split(".")[0]
         basewire = cmds.listRelatives(shp, p=True)[0]
         return(basewire)
 
-
     def create_ctrls_for_joints(self, side):
-#----------------scale attr from ui to scale the ctrls
+        #----------------scale attr from ui to scale the ctrls
         for jnt in self.eyeRig[side]["ctrlJntList"]:
             ctrlName = "{0}_{1}_{2}_CTRL".format(self.name, side, self.eyeRig[side]["ctrlJntList"].index(jnt))
             ctrl = rig.create_control(name=ctrlName, type="circle", axis="x", color=self.color)
@@ -407,7 +390,6 @@ class EyelidRigBuild(object):
             self.eyeRig[side]["ctrlGrpList"].append(grp)
             rig.snap_to(jnt, grp)
             cmds.parent(grp, self.eyeRig[side]["ctrlsGrp"])
-
 
     def connect_ctrl_via_proxies(self, side):
         for grp in self.eyeRig[side]["ctrlGrpList"]:
@@ -420,35 +402,35 @@ class EyelidRigBuild(object):
             # connect with joint
             rig.connect_transforms(ctrlProxy, self.eyeRig[side]["ctrlJntList"][index])
 
-            # Do we need to add another layer of this? Don't think so. . . 
+            # Do we need to add another layer of this? Don't think so. . .
 
     def smart_blink_setup(self):
         closeCrv = cmds.duplicate(self.eyeRig["top"]["crvList"][1], name="{0}_blinkLowres".format(self.name))[0]
         cmds.parent(closeCrv, self.blinkCrvGrp)
         self.blinkCrvs.append(closeCrv)
-        
+
         midBS = cmds.blendShape(self.eyeRig["top"]["crvList"][1], self.eyeRig["bot"]["crvList"][1], closeCrv)[0]
         midTopAttr = "{0}.{1}".format(midBS, self.eyeRig["top"]["crvList"][1])
         midBotAttr = "{0}.{1}".format(midBS, self.eyeRig["bot"]["crvList"][1])
         # dupe bot hirez crvs and create wires
         cmds.setAttr(midTopAttr, 0)
         cmds.setAttr(midBotAttr, 1)
-        # rename base wire crv    
+        # rename base wire crv
         botBlinkTgt = cmds.duplicate(self.eyeRig["bot"]["crvList"][0], name="{0}_bot_blinkTarget".format(self.name))[0]
         cmds.parent(botBlinkTgt, self.blinkCrvGrp)
 
         topBlinkTgt = cmds.duplicate(self.eyeRig["top"]["crvList"][0], name="{0}_top_blinkTarget".format(self.name))[0]
         cmds.parent(topBlinkTgt, self.blinkCrvGrp)
 
-        botBlinkWire = cmds.wire(botBlinkTgt, envelope=1, groupWithBase=False, crossingEffect=0, localInfluence=0, w=closeCrv, name = "{0}_botBlink_WIRE".format(self.name))[0]
-        # rename base wire crv    
+        botBlinkWire = cmds.wire(botBlinkTgt, envelope=1, groupWithBase=False, crossingEffect=0, localInfluence=0, w=closeCrv, name="{0}_botBlink_WIRE".format(self.name))[0]
+        # rename base wire crv
         wireBotBaseCrv = self.get_base_wire(botBlinkWire)
         self.eyeRig["bot"]["wireBases"].append(wireBotBaseCrv)
         cmds.setAttr("{0}.scale[0]".format(botBlinkWire), 0)
 
         cmds.setAttr(midTopAttr, 1)
         cmds.setAttr(midBotAttr, 0)
-        topBlinkWire = cmds.wire(topBlinkTgt, envelope=1, groupWithBase=False, crossingEffect=0, localInfluence=0, w=closeCrv, name = "{0}_topBlink_WIRE".format(self.name))[0]
+        topBlinkWire = cmds.wire(topBlinkTgt, envelope=1, groupWithBase=False, crossingEffect=0, localInfluence=0, w=closeCrv, name="{0}_topBlink_WIRE".format(self.name))[0]
         wireTopBaseCrv = self.get_base_wire(topBlinkWire)
         self.eyeRig["top"]["wireBases"].append(wireTopBaseCrv)
         cmds.setAttr("{0}.scale[0]".format(topBlinkWire), 0)
@@ -460,7 +442,7 @@ class EyelidRigBuild(object):
 
         botBlinkBlend = cmds.blendShape(botBlinkTgt, self.eyeRig["bot"]["crvList"][0], name="{0}_bot_blink_BS".format(self.name))[0]
         botBlendAttr = "{0}.{1}".format(botBlinkBlend, botBlinkTgt)
-        
+
         # put attrs on mid ctrls
         topCtrl = self.eyeRig["top"]["ctrlList"][2]
         botCtrl = self.eyeRig["bot"]["ctrlList"][2]
@@ -475,16 +457,15 @@ class EyelidRigBuild(object):
         cmds.addAttr(botCtrl, ln="blink", at="float", dv=0, min=0, max=1, k=True)
         cmds.connectAttr("{0}.blink".format(botCtrl), botBlendAttr)
 
-        # set up reverse node setup for moving the blink up/down        
+        # set up reverse node setup for moving the blink up/down
         upDownAttr = cmds.addAttr(topCtrl, ln="blendMidDownUp", at="float", dv=0.5, min=0, max=1.0, k=True)
         blinkReverse = cmds.shadingNode("reverse", asUtility=True, name="{0}_blink_reverse".format(self.name))
         cmds.connectAttr("{0}.blendMidDownUp".format(topCtrl), midTopAttr)
         cmds.connectAttr("{0}.blendMidDownUp".format(topCtrl), "{0}.inputX".format(blinkReverse))
         cmds.connectAttr("{0}.outputX".format(blinkReverse), midBotAttr)
 
-        #clean up 
+        # clean up
         cmds.setAttr("{0}.blendMidDownUp".format(topCtrl), 0.5)
-
 
     def clean_up_rig(self):
 
@@ -496,7 +477,7 @@ class EyelidRigBuild(object):
             for x in [1, -2]:
                 ctrl = self.eyeRig[side]["ctrlList"][x]
                 rig.scale_nurbs_control(ctrl, 0.5, 0.5, 0.5)
-                pc = cmds.parentConstraint([self.eyeRig[side]["ctrlList"][x-1], self.eyeRig[side]["ctrlList"][x+1]], cmds.listRelatives(ctrl, p=True)[0], mo=True)
+                pc = cmds.parentConstraint([self.eyeRig[side]["ctrlList"][x - 1], self.eyeRig[side]["ctrlList"][x + 1]], cmds.listRelatives(ctrl, p=True)[0], mo=True)
                 rig.assign_color(ctrl, "light{0}".format(self.color.capitalize()))
 
         # connect corners xforms
@@ -523,11 +504,11 @@ class EyelidRigBuild(object):
 
         # start parenting things
         noXformGrp = cmds.group(empty=True, name="{0}_noTransform_GRP".format(self.name))
-        cmds.setAttr(noXformGrp+".inheritsTransform", 0)
+        cmds.setAttr(noXformGrp + ".inheritsTransform", 0)
         xformGrp = cmds.group(empty=True, name="{0}_transform_GRP".format(self.name))
         ctrlGrp = cmds.group(empty=True, name="{0}_ctrls_GRP".format(self.name))
         topGrp = cmds.group(empty=True, name="{0}_GRP".format(self.name))
-        
+
         cmds.parent(ctrlGrp, xformGrp)
         cmds.parent(self.blinkCrvs[0], noXformGrp)
         cmds.parent([xformGrp, noXformGrp], topGrp)
@@ -553,7 +534,5 @@ class EyelidRigBuild(object):
                 cmds.parent(xform, xformGrp)
             cmds.parent(self.blinkCrvGrp, xformGrp)
 
-
         cmds.xform(topGrp, ws=True, rp=self.centerPos)
         cmds.xform(topGrp, ws=True, sp=self.centerPos)
-

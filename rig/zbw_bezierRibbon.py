@@ -1,7 +1,7 @@
 
 
 import maya.cmds as cmds
-from . import zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 
 
 

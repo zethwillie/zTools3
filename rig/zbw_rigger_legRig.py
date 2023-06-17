@@ -1,18 +1,9 @@
 import maya.cmds as cmds
 
-import zTools.rig.zbw_rigger_utils as zrt
-import importlib
-
-importlib.reload(zrt)
-import zTools.rig.zbw_rigger_baseLimb as BL
-
-importlib.reload(BL)
-import zTools.rig.zbw_rig as rig
-
-importlib.reload(rig)
-import zTools.rig.zbw_rigger_window as zrw
-
-importlib.reload(zrw)
+import zTools3.rig.zbw_rigger_utils as zrt
+import zTools3.rig.zbw_rigger_baseLimb as BL
+import zTools3.rig.zbw_rig as rig
+import zTools3.rig.zbw_rigger_window as zrw
 
 
 class LegRigUI(zrw.RiggerWindow):
@@ -63,7 +54,6 @@ class LegRig(BL.BaseLimb):
             self.revFootJnt["orig"].append(jnt)
             cmds.parent(jnt, self.joints[3])
 
-
     def make_limb_rig(self):
         self.detach_reverse_joints()
         self.clean_initial_joints()
@@ -86,11 +76,8 @@ class LegRig(BL.BaseLimb):
         self.create_sets()
         self.label_deform_joints()
 
-
-
     def create_ik_rig(self):
         BL.BaseLimb.create_ik_rig(self, leg=True)
-
 
     def detach_reverse_joints(self):
         for i in range(len(self.revFootJnt["orig"])):
@@ -100,20 +87,19 @@ class LegRig(BL.BaseLimb):
         cmds.parent(self.revFootJnt["orig"][2], self.revFootJnt["orig"][1])
         cmds.parent(self.revFootJnt["orig"][1], self.revFootJnt["orig"][0])
 
-
     def create_reverse_foot(self):
         mirJnt = None
         if self.mirror:
             if self.mirrorAxis == "yz":
-                mirJnt = cmds.mirrorJoint(self.revFootJnt["orig"][0], mirrorBehavior=True, mirrorYZ=True, searchReplace = [self.origPrefix, self.mirPrefix])
+                mirJnt = cmds.mirrorJoint(self.revFootJnt["orig"][0], mirrorBehavior=True, mirrorYZ=True, searchReplace=[self.origPrefix, self.mirPrefix])
                 for jnt in mirJnt:
                     self.revFootJnt["mir"].append(jnt)
             elif self.mirrorAxis == "xy":
-                mirJnt = cmds.mirrorJoint(self.revFootJnt["orig"][0], mirrorBehavior=True, mirrorXY=True, searchReplace = [self.origPrefix, self.mirPrefix])
+                mirJnt = cmds.mirrorJoint(self.revFootJnt["orig"][0], mirrorBehavior=True, mirrorXY=True, searchReplace=[self.origPrefix, self.mirPrefix])
                 for jnt in mirJnt:
                     self.revFootJnt["mir"].append(jnt)
             elif self.mirrorAxis == "xz":
-                mirJnt = cmds.mirrorJoint(self.revFootJnt["orig"][0], mirrorBehavior=True, mirrorXZ=True, searchReplace = [self.origPrefix, self.mirPrefix])
+                mirJnt = cmds.mirrorJoint(self.revFootJnt["orig"][0], mirrorBehavior=True, mirrorXZ=True, searchReplace=[self.origPrefix, self.mirPrefix])
                 for jnt in mirJnt:
                     self.revFootJnt["mir"].append(jnt)
 
@@ -142,14 +128,14 @@ class LegRig(BL.BaseLimb):
 
             # create grp for each loc
             for jnt in self.revFootJnt[side]:
-                grp = cmds.group(em=True, name="{0}_{1}_{2}".format(sideName, self.part, jnt.replace("JNT","PIV")))
+                grp = cmds.group(em=True, name="{0}_{1}_{2}".format(sideName, self.part, jnt.replace("JNT", "PIV")))
                 rig.snap_to(jnt, grp)
                 self.footPivots[side].append(grp)
 
-            #parent all to world
+            # parent all to world
             for piv in self.footPivots[side]:
                 cmds.parent(piv, self.ikCtrls[side][0])
-                cmds.setAttr(piv+".r", 0, 0, 0)
+                cmds.setAttr(piv + ".r", 0, 0, 0)
 
             # parent ball to toe, toe to heel, heel to to ctrl
             cmds.parent(self.footPivots[side][0], self.footPivots[side][1])
@@ -158,7 +144,7 @@ class LegRig(BL.BaseLimb):
 
             # parent ik to ball grp
             cmds.parent(self.ikHandles[side][0], self.footPivots[side][0])
-            # create new ik from ankle to ball, parent under 
+            # create new ik from ankle to ball, parent under
             ikName = "{0}_{1}_ballIK".format(sideName, self.part)
             ballHandle = cmds.ikHandle(startJoint=self.ikJoints[side][2], endEffector=self.ikJoints[side][3], name=ikName, solver="ikRPsolver")[0]
             self.ikHandles[side].append(ballHandle)
@@ -201,7 +187,6 @@ class LegRig(BL.BaseLimb):
                 self.twistJoints[side].append(jnt)
 
         # add locator at actual elbow that is parent of other two?
-
 
     def clean_up_rig(self):
         BL.BaseLimb.clean_up_rig(self)

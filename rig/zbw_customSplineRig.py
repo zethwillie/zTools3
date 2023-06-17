@@ -1,4 +1,4 @@
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 
 sel = cmds.ls(sl=True)
 

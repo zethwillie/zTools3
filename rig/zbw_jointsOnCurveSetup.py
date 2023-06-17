@@ -10,7 +10,7 @@
 
 import maya.cmds as cmds
 import maya.mel as mel
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 
 #---------------- first bind to a joint with post weighting
 #---------------- after all, then set initial joint to zero

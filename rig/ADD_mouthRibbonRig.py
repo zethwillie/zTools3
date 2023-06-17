@@ -1,7 +1,7 @@
 # mouth ribbon Rig
 
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 
 """
 grab the edge loops on top/bottom to create curve to create ribbons

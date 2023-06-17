@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 
 
 def soft_selection_to_joint(jointName=None, auto=True, surfacePosition=True, surfaceRotation=True, *args):
@@ -12,7 +12,7 @@ def soft_selection_to_joint(jointName=None, auto=True, surfacePosition=True, sur
     if verts:
         # make sure vtx's just from one object
         objList = [v.split(".")[0] for v in verts]
-        if len(set(objList))>1:
+        if len(set(objList)) > 1:
             cmds.warning("need to select verts from only one object")
             return()
         initPos = rig.average_point_positions(verts)
@@ -35,9 +35,10 @@ def soft_selection_to_joint(jointName=None, auto=True, surfacePosition=True, sur
             return()
 
     center = rig.average_point_positions(verts)
-    rot = (0,0,0)
+    rot = (0, 0, 0)
     if surfacePosition:
         center = rig.closest_point_on_mesh_position(center, mesh)
+
     if surfaceRotation:
         rot = rig.closest_point_on_mesh_rotation(center, mesh)
 
@@ -45,7 +46,7 @@ def soft_selection_to_joint(jointName=None, auto=True, surfacePosition=True, sur
     name = "{0}_JNT".format(tform)
     if jointName:
         name = "{0}_JNT".format(jointName)
-    jnt = cmds.joint(name = name)
+    jnt = cmds.joint(name=name)
     cmds.xform(jnt, ws=True, t=center)
     cmds.xform(jnt, ws=True, ro=rot)
 
@@ -58,6 +59,7 @@ def soft_selection_to_joint(jointName=None, auto=True, surfacePosition=True, sur
         cmds.skinPercent(skinCluster, vtxs[v], transformValue=[jnt, wts[v]])
 
     return(jnt)
+
 
 def softSelectionToJoint(**kwargs):
     soft_selection_to_joint(kwargs)

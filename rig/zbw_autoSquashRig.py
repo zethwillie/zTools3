@@ -10,12 +10,12 @@
 
 
 import maya.cmds as cmds
-import zTools.rig.zbw_rig as rig
+import zTools3.rig.zbw_rig as rig
 import importlib
 importlib.reload(rig)
 
 
-#todo   add the third direction for the squashing
+# todo   add the third direction for the squashing
 def create_squash_rig(*args):
     """
     creates a rig around the selected objects. Two squashes are created (upDown/lfRt)
@@ -85,6 +85,7 @@ def create_squash_rig(*args):
     cmds.setAttr("{0}.lowBound".format(sq2Def), -1.3)
     cmds.setAttr("{0}.highBound".format(sq1Def), 1.3)
     cmds.setAttr("{0}.highBound".format(sq2Def), 1.3)
+
 
 def autoSquashRig(*args):
     create_squash_rig()
