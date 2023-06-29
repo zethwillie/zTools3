@@ -2,11 +2,87 @@ import maya.cmds as mc
 import maya.mel as mel
 
 """
-for copying skin weighting and/or constraints from existing to new geo.
+for copying basic skin weighting and/or constraints from existing to new geo.
 
 """
 
-def swap_bind_geo(namespace="", levels=2, longname=False):
+# deal with blend shapes, other deformers
+
+widgets = {}
+
+
+def swap_rig_geo_ui():
+    if mc.window("swap_geo_win", exists=True):
+        mc.deleteUI("swap_geo_win")
+
+    widgets["win"] = mc.window("swap_geo_win", t="zbw_swap_rig_geo", w=300, h=100)
+    widgets["mainCLO"] = mc.columnLayout()
+    widgets["origTFBG"] = mc.textFieldButtonGrp(l="Original Top Node:", bl="<<<", cal=([1, "left"], [2, "left"], [3, "left"]), cw=([1, 100], [2, 170], [3, 20]), bc=get_geo)
+    widgets["namespaceTFG"] = mc.textFieldGrp(l="New Geo Namespace:", cal=([1, "left"], [2, "left"]), cw=([1, 100], [2, 200]))
+    widgets["levelsIFG"] = mc.intFieldGrp(l="Levels To Ignore", cal=([1, "left"], [2, "left"]), cw=([1, 100], [2, 200]))
+    mc.separator(h=10)
+    widgets["longnameCkB"] = mc.checkBoxGrp(l="Longnames:", cc=set_longname)
+    widgets["button"] = mc.button(w=300, h=50, bgc=(0.6, .8, .6), l="Attach New Geo", c=execute_swap)
+
+    mc.showWindow(widgets["win"])
+    mc.window(widgets["win"], e=True, w=300, h=100)
+
+
+def get_geo(*args):
+    if mc.checkBoxGrp(widgets["longnameCkB"], q=True, v1=True):
+        sel = mc.ls(sl=True, l=True)
+    else:
+        sel = mc.ls(sl=True)
+    if sel:
+        geo = sel[0]
+
+    mc.textFieldButtonGrp(widgets["origTFBG"], e=True, tx=geo)
+
+
+def set_longname(*args):
+    objsel = ""
+    origSelection = mc.ls(sl=True)
+    origObj = mc.textFieldButtonGrp(widgets["origTFBG"], q=True, tx=True)
+    if not origObj:
+        return()
+    if mc.checkBoxGrp(widgets["longnameCkB"], q=True, v1=True):
+        if not origObj.startswith("|"):
+            mc.select(origObj, r=True)
+            objsel = mc.ls(sl=True, l=True)
+    else:
+        if origObj.startswith("|"):
+            mc.select(origObj, r=True)
+            objsel = mc.ls(sl=True)
+    if objsel:
+        mc.textFieldButtonGrp(widgets["origTFBG"], e=True, tx=objsel[0])
+    mc.select(origSelection, r=True)
+
+
+def execute_swap(*args):
+    top_node = mc.textFieldGrp(widgets["origTFBG"], q=True, tx=True)
+    namespace = mc.textFieldGrp(widgets["namespaceTFG"], q=True, tx=True)
+    levels = mc.intFieldGrp(widgets["levelsIFG"], q=True, v1=True)
+    longname = mc.checkBoxGrp(widgets["longnameCkB"], q=True, v1=True)
+
+    swap_rig_geo(top_node, namespace, levels, longname)
+
+
+def swap_rig_geo(top_node="", namespace="", levels=2, longname=False):
+    if not top_node:
+        sel = mc.ls(sl=True)
+        if not sel:
+            return()
+        top_node = sel[0]
+
+    if not top_node:
+        mc.warning("no top node of original geo to copy from! Cancelling!")
+        return()
+
+    swap_bind_geo(top_node, namespace, levels, longname)
+    swap_constraint_geo(top_node, namespace, levels, longname)
+
+
+def swap_bind_geo(top_node="", namespace="", levels=2, longname=False):
     """
     select the top node and this will get all polys under that node and find the comparable geo under the given namspace. For each poly it will find the bind joints, bind to them, and copy the skinning (& weights) to the namespace geo
     ARGS:
@@ -14,13 +90,16 @@ def swap_bind_geo(namespace="", levels=2, longname=False):
         levels (int): number of hierarchy levels to discount (grps in the rig above the geo top group). This is to ignore groups in the rig before you get to the geo section
         longname (bool): should we use longnames for geo (i.e. with pipes |). Don't need this if we're checking for name clashing
     """
+    origSel = mc.ls(sl=True)
     if not namespace:
         return()
-    # select top node and drill down to get all geo
-    sel = mc.ls(sl=True)
-    if not sel:
+    if not top_node:
+        sel = mc.ls(sl=True)
+        if not sel:
+            return()
+        top_node = sel[0]
+    if not top_node:
         return()
-    top_node = sel[0]
     geo = select_hierarchy(top_node, "poly")
 
     for g in geo:
@@ -40,10 +119,10 @@ def swap_bind_geo(namespace="", levels=2, longname=False):
             copy_skinning(origGeo, outGeo)
 
     print("Skin copying done!")
-    mc.select(sel)
+    mc.select(origSel)
 
 
-def swap_constraint_geo(namespace="", levels=2, longname=False):
+def swap_constraint_geo(top_node="", namespace="", levels=2, longname=False):
     """
     select the top node and this will get all nodes under that node and find the comparable node under the given namspace. For each node it will then find any (*not aim) constraints and add constraints to the new geo from the same sources w same weights.
     ARGS:
@@ -51,12 +130,15 @@ def swap_constraint_geo(namespace="", levels=2, longname=False):
         levels (int): number of hierarchy levels to discount (grps in the rig above the geo top group)
         longname (bool): should we use longnames for geo (i.e. with pipes |). Don't need this if we're checking for name clashing
     """
+    origSel = mc.ls(sl=True)
     if not namespace:
         return()
-    sel = mc.ls(sl=True)
-    if not sel:
-        return()
-    mc.select(sel[0]) # assume first selection as our base
+    if not top_node:
+        sel = mc.ls(sl=True)
+        if not sel:
+            return()
+        top_node = sel[0]
+    mc.select(top_node)  # assume first selection as our base
     mc.select(hi=True)
     nodes = mc.ls(sl=True)
     for n in nodes:
@@ -77,6 +159,7 @@ def swap_constraint_geo(namespace="", levels=2, longname=False):
         if constraint_check(origNode):
             cons = copy_constraints(origNode, outNode)
             print("== {0} constraints create: ".format(origNode), cons)
+    mc.select(origSel)
     print("Constraint copying done!")
     # check. . . if good, remove skinning from old, delete old geo
 
@@ -99,7 +182,7 @@ def copy_constraints(orig_node, target_node, *args):
         print("Existing constraints on {0}. Skipping!".format(target_node))
         return()
     created_constraints = []
-    cons = list(set(cons_raw)) # get all constraints
+    cons = list(set(cons_raw))  # get all constraints
     for con in cons:
         if mc.objectType(con) == "parentConstraint":
             pc = copy_parent_constraint(con, target_node)
@@ -131,8 +214,8 @@ def copy_parent_constraint(con, target_node):
     newWeightAliasList = mc.parentConstraint(con, q=True, weightAliasList=True)
     for x in range(len(newWeightAliasList)):
         mc.setAttr("{0}.{1}".format(pc[0], newWeightAliasList[x]), weights[x])
-        t = mc.getAttr(con+ f".target[{x}].targetOffsetTranslate")[0]
-        r = mc.getAttr(con+ f".target[{x}].targetOffsetRotate")[0]
+        t = mc.getAttr(con + f".target[{x}].targetOffsetTranslate")[0]
+        r = mc.getAttr(con + f".target[{x}].targetOffsetRotate")[0]
         mc.setAttr(pc[0] + f".target[{x}].targetOffsetTranslate", t[0], t[1], t[2])
         mc.setAttr(pc[0] + f".target[{x}].targetOffsetRotate", r[0], r[1], r[2])
     return(pc[0])
@@ -185,7 +268,7 @@ def copy_scale_constraint(con, target_node):
     newWeightAliasList = mc.scaleConstraint(con, q=True, weightAliasList=True)
     for x in range(len(newWeightAliasList)):
         mc.setAttr("{0}.{1}".format(sc[0], newWeightAliasList[x]), weights[x])
-    s = mc.getAttr(con+ ".offset")[0]
+    s = mc.getAttr(con + ".offset")[0]
     mc.setAttr(sc[0] + ".offset", s[0], s[1], s[2])
     return(sc[0])
 

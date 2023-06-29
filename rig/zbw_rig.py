@@ -11,7 +11,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMaya as om
 
-import zbw_controlShapes as cshp
+import zTools3.rig.zbw_controlShapes as cshp
 import importlib
 
 

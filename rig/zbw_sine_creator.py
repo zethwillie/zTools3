@@ -1,3 +1,16 @@
+# Demo usage
+"""
+ctrlAttr = "autoswim_Ctrl.global_swim"
+pfs = ["tail1", "tail2", "tail3", "tail4", "tail5", "tail6", "tail7"]
+objs = ['bk_spine_1_Ctrl_Auto', 'bk_spine_2_Ctrl_Auto', 'bk_spine_3_Ctrl_Auto', 'bk_spine_4_Ctrl_Auto', 'bk_spine_5_Ctrl_Auto', 'bk_spine_6_Ctrl_Auto', 'bk_spine_7_Ctrl_Auto']
+
+for x in range(len(objs)):
+    prefix = pfs[x]
+    tgtAttr = "{0}.rz".format(objs[x])
+    sc.create_sine_nodes(prefix, ctrlAttr, tgtAttr)
+"""
+
+
 import maya.cmds as cmds
 from functools import partial
 

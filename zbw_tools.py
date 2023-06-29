@@ -553,13 +553,6 @@ def tools_UI(*args):
         c=partial(zAction, zRigDict, "jntRadius"),
         ann=zAnn["jntRad"],
     )
-    widgets["typFindBut"] = cmds.button(
-        l="zbw_typeFinder",
-        w=140,
-        bgc=(0.7, 0.5, 0.5),
-        c=partial(zAction, zRigDict, "typFind"),
-        ann=zAnn["typeFinder"],
-    )
     widgets["proxyGeoBut"] = cmds.button(
         l="zbw_createProxyGeo",
         w=140,
@@ -571,8 +564,29 @@ def tools_UI(*args):
         l="zbw_poseReader",
         w=140,
         bgc=(0.7, 0.5, 0.5),
-        c=partial(zClassAction, zRigDict, "poseReader"),
+        c=partial(zAction, zRigDict, "poseReader"),
         ann=zAnn["pose"],
+    )
+    widgets["sinCreateBut"] = cmds.button(
+        l="zbw_sineCreator",
+        w=140,
+        bgc=(0.7, 0.5, 0.5),
+        c=partial(zAction, zRigDict, "sineCreator"),
+        ann=zAnn["sineCreator"],
+    )
+    widgets["swapRigGeo"] = cmds.button(
+        l="zbw_swap_rig_geo",
+        w=140,
+        bgc=(0.7, 0.5, 0.5),
+        c=partial(zAction, zRigDict, "swapRigGeo"),
+        ann=zAnn["swapRigGeo"],
+    )
+    widgets["message"] = cmds.button(
+        l="zbw_message_manager",
+        w=140,
+        bgc=(0.7, 0.5, 0.5),
+        c=partial(zAction, zRigDict, "messageManager"),
+        ann=zAnn["messageManager"],
     )
     widgets["cmtRename"] = cmds.button(
         l="cometRename",
@@ -863,6 +877,13 @@ def tools_UI(*args):
         bgc=(0.7, 0.5, 0.5),
         c=partial(zAction, zShdDict, "prvsShd"),
         ann=zAnn["previsShd"],
+    )
+    widgets["typFindBut"] = cmds.button(
+        l="zbw_typeFinder",
+        w=140,
+        bgc=(0.7, 0.5, 0.5),
+        c=partial(zAction, zModelDict, "typFind"),
+        ann=zAnn["typeFinder"],
     )
 
     cmds.setParent(widgets["tab"])

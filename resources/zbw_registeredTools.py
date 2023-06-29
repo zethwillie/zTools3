@@ -23,7 +23,6 @@ zRigDict = {
     "splineIK": ["zTools3.rig.zbw_splineRig", "splineRig"],
     "leg": ["zTools3.rig.zbw_rigger_legRig",  "LegRigUI"],
     "arm": ["zTools3.rig.zbw_rigger_armRig", "ArmRigUI"],
-    "typFind": ["zTools3.rig.zbw_typeFinder", "typeFinder"],
     "wire": ["zTools3.rig.zbw_wireRig", "wireRig"],
     "eyelidRig": ["zTools3.rig.zbw_eyelidRig", "EyelidRigUI"],
     "softJoint": ["zTools3.rig.zbw_softSelectionToJoint", "softSelectionToJoint"],
@@ -34,6 +33,9 @@ zRigDict = {
     "poseReader":["zTools3.rig.zbw_poseReader", "PoseReader"],
     "dupeBlends":["zTools3.rig.zbw_dupeBlends", "dupeBlends"],
     "animPolish":["js_animPolish3.js_animPolish_ui", "ui"],
+    "sineCreator":["zTools3.rig.zbw_sine_creator", "sine_creator"],
+    "swapRigGeo":["zTools3.rig.zbw_swap_rig_geo", "swap_rig_geo_ui"],
+    "messageManager":["zTools3.rig.zbw_message_manager", "launch_ui"],
 }
 
 zAnimDict = {
@@ -54,7 +56,8 @@ zAnimDict = {
 
 zModelDict = {
     "extend": ["zTools3.model.zbw_polyExtend","polyExtend"],
-    "wrinkle": ["zTools3.model.zbw_wrinklePoly", "wrinklePoly"]
+    "wrinkle": ["zTools3.model.zbw_wrinklePoly", "wrinklePoly"],
+    "typFind": ["zTools3.rig.zbw_typeFinder", "typeFinder"],
 }
 
 zShdDict = {
@@ -113,6 +116,9 @@ zAnnDict = {
     "typeFinder":"zbw_typeFinder - (not finished) for finding nodes of any type",
     "proxy":"zbw_createProxyGeo - for creating/binding simple proxy geometry to joints",
     "pose":"zbw_poseReader - creates a 4-way, sphere-based pose reader",
+    "sineCreator": "zbw_sine_creator - creates a node based sine setup to attach to/from objects",
+    "messageManager": "zbw_message_manager - creates/connects message attributes",
+    "swapRigGeo": "zbw_swap_rig_geo - for swapping new versions (name based) of existing bind/constrained geo",
     "rename":"cometRename - via Michael Comet",
     "jntOrient":"cometJointOrient - via Michael Comet",
     "animPolish":"js_animPolish - via Josh Sobel (not included)",
