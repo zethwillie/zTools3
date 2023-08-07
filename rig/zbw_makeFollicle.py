@@ -61,48 +61,46 @@ def getUV(*args):
     else:
         cmds.warning("You haven't selected any verts! Select one or two to place a follicle")
 
-        #convert vertices to uvs and get their value
-        if uvs:
-            uvList = []
-            for uv in uvs:
-                #grab first (cuz verts can be multiple uv's)
-                thisUV = cmds.ls(uv)[0]
-                #convert the uv index to u and v values
-                uvVal = cmds.polyEditUV(uv, q=True)
-                uvList.append(uvVal)
+    #convert vertices to uvs and get their value
+    if uvs:
+        uvList = []
+        for uv in uvs:
+            #grab first (cuz verts can be multiple uv's)
+            thisUV = cmds.ls(uv)[0]
+            #convert the uv index to u and v values
+            uvVal = cmds.polyEditUV(uv, q=True)
+            uvList.append(uvVal)
 
-            U = []
-            V = []
-            sizeUV = len(uvList)
-            #print uvList
-            for uv in uvList:
-                U.append(uv[0])
-                V.append(uv[1])
-            #print "U = %s"%U
-            #print "V = %s"%V
-            #DO THE AVERAGING HERE
-            x = 0
-            y = 0
-            for a in U:
-                x = x + a
-            for b in V:
-                y = y + b
-            u = x/sizeUV
-            v = y/sizeUV
-            uvVal = [u,v]
+        U = []
+        V = []
+        sizeUV = len(uvList)
+        #print uvList
+        for uv in uvList:
+            U.append(uv[0])
+            V.append(uv[1])
+        #print "U = %s"%U
+        #print "V = %s"%V
+        #DO THE AVERAGING HERE
+        x = 0
+        y = 0
+        for a in U:
+            x = x + a
+        for b in V:
+            y = y + b
+        u = x/sizeUV
+        v = y/sizeUV
+        uvVal = [u,v]
 
-            cmds.select(vertices)
+        cmds.select(vertices)
 
-            shapeName = vertices[0].rpartition(".vtx")[0]
-            meshName = cmds.listRelatives(shapeName, p=True)[0]
-            folName = cmds.textFieldGrp(widgets["nameTFG"], q=True, tx=True)
-            uValue = uvVal[0]
-            vValue = uvVal[1]
+        shapeName = vertices[0].rpartition(".vtx")[0]
+        meshName = cmds.listRelatives(shapeName, p=True)[0]
+        folName = cmds.textFieldGrp(widgets["nameTFG"], q=True, tx=True)
+        uValue = uvVal[0]
+        vValue = uvVal[1]
 
-            follicle(meshName, folName, uValue, vValue)
+        follicle(meshName, folName, uValue, vValue)
 
-        else:
-            pass
             
 #---------------- use the rig version
 def follicle(surface="none", folName="none", u=0.5, v=0.5, *args):

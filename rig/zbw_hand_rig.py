@@ -44,12 +44,12 @@ class HandRig(object):
     def __init__(self):
         self.joint_dictionary = {}
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        with open("{0}/handData.json".format(dir_path)) as json_file:
+        with open("{0}\\handData.json".format(dir_path)) as json_file:
             data = json.load(json_file)
             self.joint_dictionary = data
 
         self.pose_dictionary = {}
-        with open("{0}/handPoseData.json".format(dir_path)) as json_file:
+        with open("{0}\\handPoseData.json".format(dir_path)) as json_file:
             pdata = json.load(json_file)
             self.pose_dictionary = pdata
 
