@@ -109,7 +109,7 @@ def swap_bind_geo(top_node="", namespace="", levels=2, longname=False):
             ns_split = [namespace + ":" + x for x in split[levels:]]
             outGeo = "|" + "|".join(ns_split)
             if not mc.objExists(outGeo):
-                print("Couldn't find namespace version: {0}".format(ns_geo))
+                print("Couldn't find namespace version: {0}".format(outGeo))
                 continue
         else:
             origGeo = g.split("|")[-1]
