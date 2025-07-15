@@ -1,7 +1,7 @@
 # message attribute mapper - maya only
 
-from PySide2 import QtCore, QtGui, QtWidgets
-from shiboken2 import wrapInstance
+from PySide6 import QtCore, QtGui, QtWidgets
+from shiboken6 import wrapInstance
 
 import maya.cmds as mc
 import maya.OpenMayaUI as omui
